@@ -48,29 +48,17 @@
         import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, updateDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { collectionGroup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // ==========================================
-        // PRODUKSI AKTIF (TERHUBUNG KE FIREBASE CLOUD)
-        // ==========================================
         const is_preview = false; 
 
-        window.mockData = {
-            users: [
-                { id: 'mock-guru-id', name: 'Saprudin, S.Ag', email: 'saprudin@ud.in', role: 'guru' }
-            ],
-            journals: [],
-            grades: [],
-            exams: [],
-            evaluations: []
-        };
-
+        // ⚠️ MASUKKAN FIREBASE CONFIG ANDA DI SINI
         const firebaseConfig = {
-  apiKey: "AIzaSyBdiFDd3HFwy82G4_vQE3gOp_zi6jjBCig",
-  authDomain: "jurnal-database.firebaseapp.com",
-  projectId: "jurnal-database",
-  storageBucket: "jurnal-database.firebasestorage.app",
-  messagingSenderId: "1028098900309",
-  appId: "1:1028098900309:web:ed107c9a7f583afe7cafdc",
-  measurementId: "G-JXVKCVFSFX"
+          apiKey: "AIzaSyCmMk4grgMcTC3OIVCql5PI4gksj7c99Ak",
+          authDomain: "new-jurnalguru.firebaseapp.com",
+          projectId: "new-jurnalguru",
+          storageBucket: "new-jurnalguru.firebasestorage.app",
+          messagingSenderId: "204811689173",
+          appId: "1:204811689173:web:ba89fd088914ba33e6165c",
+          measurementId: "G-K6VDDGMQ7G"
         };
 
         let app, auth, db;
@@ -87,6 +75,7 @@
         
         let cachedJournals = [];
         let cachedGrades = [];
+        let cachedSchedules = [];
         let graderExams = [];
         let currentExamId = null;
         let editorQuestions = [];
@@ -95,6 +84,7 @@
         let adminCachedUsers = [];
         let adminCachedJournals = [];
         let adminCachedGrades = [];
+        let adminCachedSchedules = [];
 
         const root = document.getElementById('app');
 
@@ -150,35 +140,29 @@
 
         function initApp() {
             initTheme();
-            if (is_preview) {
-                currentUser = { uid: 'mock-admin-id', email: 'admin@alirsyad.or.id', name: 'Admin', role: 'admin' };
-                userRole = 'admin';
-                renderMainDashboard();
-            } else {
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        currentUser = user;
-                        try {
-                            const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
-                            if (!userDoc.empty) {
-                                userRole = userDoc.docs[0].data().role || 'guru';
-                                currentUser.name = userDoc.docs[0].data().name || user.email.split('@')[0];
-                            } else {
-                                const detectedRole = user.email.toLowerCase().includes('admin') ? 'admin' : 'guru';
-                                await setDoc(doc(db, 'users', user.uid), { role: detectedRole, name: user.email.split('@')[0], email: user.email });
-                                userRole = detectedRole;
-                                currentUser.name = user.email.split('@')[0];
-                            }
-                        } catch (e) {
-                            userRole = user.email.toLowerCase().includes('admin') ? 'admin' : 'guru';
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    try {
+                        const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
+                        if (!userDoc.empty) {
+                            userRole = userDoc.docs[0].data().role || 'guru';
+                            currentUser.name = userDoc.docs[0].data().name || user.email.split('@')[0];
+                        } else {
+                            const detectedRole = user.email.toLowerCase().includes('admin') ? 'admin' : 'guru';
+                            await setDoc(doc(db, 'users', user.uid), { role: detectedRole, name: user.email.split('@')[0], email: user.email });
+                            userRole = detectedRole;
+                            currentUser.name = user.email.split('@')[0];
                         }
-                        renderMainDashboard();
-                    } else {
-                        currentUser = null;
-                        window.renderLogin();
+                    } catch (e) {
+                        userRole = user.email.toLowerCase().includes('admin') ? 'admin' : 'guru';
                     }
-                });
-            }
+                    renderMainDashboard();
+                } else {
+                    currentUser = null;
+                    window.renderLogin();
+                }
+            });
         }
 
         window.renderLogin = function(isRegister = false) {
@@ -210,7 +194,12 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Kata Sandi</label>
-                                <input type="password" id="auth-password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition" placeholder="••••••••">
+                                <div class="relative">
+                                    <input type="password" id="auth-password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 pr-12 text-sm text-white focus:outline-none focus:border-indigo-500 transition" placeholder="••••••••">
+                                    <button type="button" onclick="window.togglePassword()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-200 transition" title="Lihat/Sembunyikan Sandi">
+                                        <i id="toggle-pwd-icon" class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                             <button type="submit" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-indigo-600/20">
                                 ${isRegister ? 'Daftar Akun Guru' : 'Masuk ke Sistem'}
@@ -225,6 +214,20 @@
                 </div>
             `;
 
+            window.togglePassword = function() {
+                const pwdInput = document.getElementById('auth-password');
+                const pwdIcon = document.getElementById('toggle-pwd-icon');
+                if (pwdInput.type === 'password') {
+                    pwdInput.type = 'text';
+                    pwdIcon.classList.remove('fa-eye');
+                    pwdIcon.classList.add('fa-eye-slash');
+                } else {
+                    pwdInput.type = 'password';
+                    pwdIcon.classList.remove('fa-eye-slash');
+                    pwdIcon.classList.add('fa-eye');
+                }
+            };
+
             document.getElementById('auth-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('auth-email').value;
@@ -232,30 +235,22 @@
                 const nameInput = document.getElementById('reg-name');
                 const fullName = nameInput ? nameInput.value : email.split('@')[0];
 
-                if (!is_preview) {
-                    try {
-                        if (isRegister) {
-                            const cred = await createUserWithEmailAndPassword(auth, email, password);
-                            const assignedRole = email.toLowerCase().includes('admin') ? 'admin' : 'guru';
-                            await setDoc(doc(db, 'users', cred.user.uid), {
-                                role: assignedRole,
-                                name: fullName,
-                                email: email
-                            });
-                            window.showToast('Pendaftaran akun berhasil!', 'success');
-                        } else {
-                            await signInWithEmailAndPassword(auth, email, password);
-                            window.showToast('Berhasil masuk ke sistem!', 'success');
-                        }
-                    } catch (err) {
-                        window.showToast(err.message, 'error');
+                try {
+                    if (isRegister) {
+                        const cred = await createUserWithEmailAndPassword(auth, email, password);
+                        const assignedRole = email.toLowerCase().includes('admin') ? 'admin' : 'guru';
+                        await setDoc(doc(db, 'users', cred.user.uid), {
+                            role: assignedRole,
+                            name: fullName,
+                            email: email
+                        });
+                        window.showToast('Pendaftaran akun berhasil!', 'success');
+                    } else {
+                        await signInWithEmailAndPassword(auth, email, password);
+                        window.showToast('Berhasil masuk ke sistem!', 'success');
                     }
-                } else {
-                    const assignedRole = email.toLowerCase().includes('admin') ? 'admin' : 'guru';
-                    currentUser = { uid: assignedRole === 'admin' ? 'mock-admin-id' : 'mock-guru-id', email, name: fullName, role: assignedRole };
-                    userRole = currentUser.role;
-                    window.renderMainDashboard();
-                    window.showToast('Berhasil masuk mode simulasi!', 'success');
+                } catch (err) {
+                    window.showToast(err.message, 'error');
                 }
             });
         };
@@ -292,17 +287,11 @@
             `;
 
             document.getElementById('btn-logout').addEventListener('click', async () => {
-                if (is_preview) {
-                    currentUser = null;
-                    window.renderLogin();
-                } else {
-                    await signOut(auth);
-                }
+                await signOut(auth);
             });
 
-            if (userRole === 'admin') {
-                initAdminLogic();
-            } else {
+            if (userRole === 'admin') initAdminLogic();
+            else {
                 initGuruLogic();
                 window.switchTab(currentTab);
                 window.switchSubNilai(subTabNilai);
@@ -313,34 +302,42 @@
             const container = document.getElementById('admin-teacher-list');
             if(!container) return;
 
-            if (is_preview) {
-                adminCachedUsers = window.mockData.users;
-                adminCachedJournals = window.mockData.journals;
-                adminCachedGrades = window.mockData.grades;
-                renderAdminData();
-            } else {
-                const updateAdminUI = () => renderAdminData();
+            const updateAdminUI = () => renderAdminData();
 
-                onSnapshot(collection(db, 'users'), (snap) => {
-                    adminCachedUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    updateAdminUI();
-                });
+            onSnapshot(collection(db, 'users'), (snap) => {
+                adminCachedUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateAdminUI();
+            });
 
-                onSnapshot(collectionGroup(db, 'journals'), (snap) => {
-                    adminCachedJournals = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
-                    updateAdminUI();
-                });
+            onSnapshot(collectionGroup(db, 'journals'), (snap) => {
+                adminCachedJournals = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
+                updateAdminUI();
+            });
 
-                onSnapshot(collectionGroup(db, 'grades'), (snap) => {
-                    adminCachedGrades = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
-                    updateAdminUI();
-                });
-            }
+            onSnapshot(collectionGroup(db, 'grades'), (snap) => {
+                adminCachedGrades = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
+                updateAdminUI();
+            });
+
+            onSnapshot(collectionGroup(db, 'schedules'), (snap) => {
+                adminCachedSchedules = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
+                updateAdminUI();
+            });
         }
 
         window.selectAdminTeacher = function(id) {
             adminSelectedTeacherId = id;
             renderAdminData();
+        };
+
+        window.deleteAdminTeacher = async function(id, name) {
+            try {
+                await deleteDoc(doc(db, 'users', id));
+                if(adminSelectedTeacherId === id) adminSelectedTeacherId = null;
+                window.showToast('Akun guru berhasil dimusnahkan dari matriks!', 'success');
+            } catch(err) {
+                window.showToast(err.message, 'error');
+            }
         };
 
         function renderAdminData() {
@@ -349,7 +346,7 @@
 
             const teacherList = adminCachedUsers.filter(t => t.role !== 'admin');
             if (teacherList.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 dark:text-slate-400 italic">Belum ada akun guru yang terdaftar.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada akun guru yang terdaftar.</p>`;
                 return;
             }
 
@@ -361,55 +358,81 @@
             const tJournals = adminCachedJournals.filter(j => j.userId === adminSelectedTeacherId);
 
             const sidebarHTML = `
-                <div class="bg-white dark:bg-[#0f1423] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 flex-shrink-0 w-full md:w-80 h-fit shadow-lg dark:shadow-none transition-colors duration-200">
-                    <h3 class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest mb-4 flex items-center">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex-shrink-0 w-full md:w-80 h-fit">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-4 flex items-center">
                         <i class="fa-solid fa-users-gear mr-2 text-slate-400"></i> DAFTAR PENGAJAR
                     </h3>
                     <div class="space-y-3">
                         ${teacherList.map(t => `
-                            <button onclick="window.selectAdminTeacher('${t.id}')" class="w-full text-left bg-transparent border ${adminSelectedTeacherId === t.id ? 'border-blue-500 bg-[#161f36]' : 'border-[#1e293b] hover:border-[#334155]'} rounded-xl p-4 transition-all flex items-center justify-between group">
-                                <div class="flex items-center space-x-3">
+                            <div class="w-full text-left bg-transparent border ${adminSelectedTeacherId === t.id ? 'border-blue-500 bg-blue-900/10' : 'border-slate-800 hover:border-slate-700'} rounded-xl p-4 transition-all flex items-center justify-between group cursor-pointer" onclick="window.selectAdminTeacher('${t.id}')">
+                                <div class="flex items-center space-x-3 pointer-events-none">
                                     <div class="w-9 h-9 rounded-lg bg-blue-900/30 text-blue-400 flex items-center justify-center border border-blue-800/50">
                                         <i class="fa-solid fa-chalkboard-user text-sm"></i>
                                     </div>
                                     <div>
-                                        <h4 class="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">${t.name || t.email}</h4>
-                                        <span class="text-[10px] text-slate-500">${t.email}</span>
+                                        <h4 class="text-sm font-bold text-slate-100 group-hover:text-blue-400 transition-colors">${t.name || t.email}</h4>
+                                        <span class="text-[10px] text-slate-400">${t.email}</span>
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-3">
-                                    <span onclick="window.deleteAdminTeacher(event, '${t.id}')" class="text-slate-600 hover:text-rose-500 p-1 cursor-pointer transition-colors" title="Hapus Guru">
+                                    <button onclick="event.stopPropagation(); window.deleteAdminTeacher('${t.id}', '${t.name || t.email}')" class="text-slate-600 hover:text-rose-500 transition-colors" title="Hapus Guru">
                                         <i class="fa-solid fa-trash text-xs"></i>
-                                    </span>
+                                    </button>
                                     <i class="fa-solid fa-chevron-right text-slate-600 text-xs ${adminSelectedTeacherId === t.id ? 'text-blue-500' : ''}"></i>
                                 </div>
-                            </button>
+                            </div>
                         `).join('')}
                     </div>
                 </div>
             `;
 
-            let detailHTML = `<div class="flex-1 bg-[#0f1423] border border-[#1e293b] rounded-2xl p-6 h-fit min-h-[500px] flex items-center justify-center"><p class="text-slate-500 text-sm">Pilih guru untuk melihat detail.</p></div>`;
+            let detailHTML = `<div class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit min-h-[500px] flex items-center justify-center"><p class="text-slate-500 text-sm">Pilih guru untuk melihat detail.</p></div>`;
             
             if (selectedTeacher) {
                 detailHTML = `
-                    <div class="flex-1 bg-white dark:bg-[#0f1423] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 md:p-8 h-fit space-y-8 shadow-lg dark:shadow-none transition-colors duration-200">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 dark:border-[#1e293b] pb-6 gap-4">
+                    <div class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 h-fit space-y-8">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-800 pb-6 gap-4">
                             <div>
-                                <span class="text-[10px] font-bold text-blue-600 dark:text-blue-500 uppercase tracking-widest block mb-1">PEMERIKSAAN GURU</span>
-                                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${selectedTeacher.name || selectedTeacher.email}</h2>
+                                <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest block mb-1">PEMERIKSAAN GURU</span>
+                                <h2 class="text-2xl font-bold text-slate-100">${selectedTeacher.name || selectedTeacher.email}</h2>
                             </div>
-                            <span class="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 px-4 py-2 rounded-full font-medium whitespace-nowrap">
+                            <span class="text-xs bg-blue-900/20 text-blue-400 border border-blue-800/50 px-4 py-2 rounded-full font-medium whitespace-nowrap">
                                 Akses Mata Dewa Aktif
                             </span>
                         </div>
 
-                        <div class="bg-slate-50 dark:bg-[#121829] border border-slate-200 dark:border-[#1e293b] rounded-xl p-5 relative overflow-hidden transition-colors duration-200">
-                            <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-3 flex items-center">
+                        <!-- JADWAL MENGAJAR GURU (VIEW ONLY) -->
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center">
+                                <i class="fa-solid fa-calendar-check mr-2 text-blue-500"></i> JADWAL MENGAJAR GURU
+                            </h3>
+                            <div class="space-y-2">
+                                ${(adminCachedSchedules || []).filter(s => s.userId === selectedTeacher.id).length === 0 ? `<p class="text-xs text-slate-500 italic">Belum ada jadwal yang diinput oleh guru ini.</p>` :
+                                  adminCachedSchedules.filter(s => s.userId === selectedTeacher.id).sort((a,b) => {
+                                      const days = { 'Senin':1, 'Selasa':2, 'Rabu':3, 'Kamis':4, 'Jumat':5, 'Sabtu':6, 'Ahad':7 };
+                                      if(days[a.hari] !== days[b.hari]) return days[a.hari] - days[b.hari];
+                                      return parseInt(a.jamKe) - parseInt(b.jamKe);
+                                  }).map(s => `
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-900 border border-slate-800 px-4 py-3 rounded-lg gap-2">
+                                        <div class="flex items-center gap-3 flex-wrap">
+                                            <span class="text-[10px] font-bold text-blue-400 bg-blue-900/20 px-2 py-1 rounded border border-blue-800/50 uppercase w-16 text-center flex-shrink-0">${s.hari}</span>
+                                            <span class="text-[10px] text-slate-300 font-bold bg-slate-950 px-2 py-1 rounded border border-slate-800">Jam ke-${s.jamKe}</span>
+                                            <span class="text-xs text-slate-300 font-mono bg-slate-950 px-2 py-1 rounded border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1"></i>${s.waktu}</span>
+                                            <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-900/20 px-2 py-1 rounded border border-emerald-800/50 whitespace-nowrap">${s.kelas}</span>
+                                            <span class="text-xs font-bold text-white flex-1 truncate">${s.mapel}</span>
+                                        </div>
+                                    </div>
+                                  `).join('')
+                                }
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center">
                                 <i class="fa-solid fa-paper-plane mr-2 text-blue-500"></i> KIRIM CATATAN EVALUASI
                             </h3>
                             <form onsubmit="window.sendAdminEvaluation(event, '${selectedTeacher.id}')" class="space-y-3">
-                                <textarea id="eval-msg-${selectedTeacher.id}" required rows="3" placeholder="Tulis catatan atau arahan untuk guru ini..." class="w-full bg-white dark:bg-[#0a0d17] border border-slate-200 dark:border-[#1e293b] rounded-xl p-4 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 resize-y"></textarea>
+                                <textarea id="eval-msg-${selectedTeacher.id}" required rows="3" placeholder="Tulis catatan atau arahan untuk guru ini..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-100 outline-none focus:border-blue-500 resize-y"></textarea>
                                 <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-blue-600/20 w-fit">
                                     Kirim Evaluasi
                                 </button>
@@ -417,39 +440,39 @@
                         </div>
 
                         <div class="space-y-4">
-                            <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest flex items-center mb-4">
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center mb-4">
                                 <i class="fa-solid fa-book text-blue-500 mr-2"></i> RIWAYAT JURNAL MENGAJAR
                             </h3>
                             ${tJournals.length === 0 ? `<p class="text-sm text-slate-500 italic">Belum ada jurnal yang diisi oleh guru ini.</p>` : `
                                 <div class="space-y-4">
                                     ${tJournals.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).map(j => `
-                                        <div class="bg-slate-50 dark:bg-[#0a0d17] border border-slate-200 dark:border-[#1e293b] rounded-xl p-5 md:p-6 text-sm text-slate-700 dark:text-slate-300 space-y-3 hover:border-slate-300 dark:hover:border-[#334155] transition-colors relative">
+                                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 md:p-6 text-sm text-slate-300 space-y-3 hover:border-slate-700 transition-colors relative">
                                             <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-2 mb-2">
                                                 <div class="space-y-1">
-                                                    <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/50 uppercase inline-block">${j.mapel}</span>
-                                                    <h4 class="text-base font-bold text-slate-900 dark:text-white mt-1">${j.materi}</h4>
+                                                    <span class="text-[10px] font-bold text-emerald-400 bg-emerald-900/20 px-2 py-0.5 rounded border border-emerald-800/50 uppercase inline-block">${j.mapel}</span>
+                                                    <h4 class="text-base font-bold text-slate-100 mt-1">${j.materi}</h4>
                                                 </div>
-                                                <span class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">${j.tanggal} (${j.waktu})</span>
+                                                <span class="text-xs text-slate-400 whitespace-nowrap">${j.tanggal} (${j.waktu})</span>
                                             </div>
                                             
-                                            <p><b class="text-slate-900 dark:text-white font-semibold">Tujuan:</b> ${j.tujuan}</p>
-                                            <p><b class="text-slate-900 dark:text-white font-semibold">Metode:</b> ${j.metode} <span class="text-slate-400 mx-1">|</span> <b class="text-slate-900 dark:text-white font-semibold">Media:</b> ${j.media}</p>
-                                            <p><b class="text-slate-900 dark:text-white font-semibold">Kehadiran:</b> ${j.kehadiran}</p>
-                                            <p><b class="text-slate-900 dark:text-white font-semibold">Capaian:</b> ${j.capaian}</p>
-                                            <p><b class="text-rose-600 dark:text-rose-400 font-semibold">Kendala:</b> <span class="text-rose-700 dark:text-rose-300">${j.kendala}</span></p>
-                                            <p><b class="text-blue-600 dark:text-blue-400 font-semibold">Tindak Lanjut:</b> <span class="text-blue-700 dark:text-blue-300">${j.tindakLanjut}</span></p>
+                                            <p><b class="text-slate-100 font-semibold">Tujuan:</b> ${j.tujuan}</p>
+                                            <p><b class="text-slate-100 font-semibold">Metode:</b> ${j.metode} <span class="text-slate-500 mx-1">|</span> <b class="text-slate-100 font-semibold">Media:</b> ${j.media}</p>
+                                            <p><b class="text-slate-100 font-semibold">Kehadiran:</b> ${j.kehadiran}</p>
+                                            <p><b class="text-slate-100 font-semibold">Capaian:</b> ${j.capaian}</p>
+                                            <p><b class="text-rose-400 font-semibold">Kendala:</b> <span class="text-rose-300">${j.kendala}</span></p>
+                                            <p><b class="text-blue-400 font-semibold">Tindak Lanjut:</b> <span class="text-blue-300">${j.tindakLanjut}</span></p>
                                             
-                                            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-[#1e293b]">
+                                            <div class="mt-4 pt-4 border-t border-slate-800">
                                                 <form onsubmit="window.sendMicroEval(event, '${selectedTeacher.id}', '${j.id}')" class="flex gap-2">
-                                                    <input type="text" id="micro-eval-${j.id}" placeholder="Beri catatan khusus untuk materi ini..." class="flex-1 bg-white dark:bg-[#121829] border border-slate-200 dark:border-[#1e293b] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500">
-                                                    <button type="submit" class="bg-slate-200 dark:bg-[#1e293b] hover:bg-slate-300 dark:hover:bg-[#334155] text-slate-800 dark:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">
+                                                    <input type="text" id="micro-eval-${j.id}" placeholder="Beri catatan khusus untuk materi ini..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-blue-500">
+                                                    <button type="submit" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">
                                                         <i class="fa-solid fa-paper-plane"></i>
                                                     </button>
                                                 </form>
                                                 ${j.adminNotes ? `
-                                                    <div class="mt-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 p-3 rounded-lg">
-                                                        <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest block mb-1">Catatan Admin</span>
-                                                        <p class="text-xs text-blue-900 dark:text-blue-100">${j.adminNotes}</p>
+                                                    <div class="mt-3 bg-blue-900/10 border border-blue-900/30 p-3 rounded-lg">
+                                                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Catatan Admin</span>
+                                                        <p class="text-xs text-blue-100">${j.adminNotes}</p>
                                                     </div>
                                                 ` : ''}
                                             </div>
@@ -470,48 +493,20 @@
             `;
         }
 
-        window.deleteAdminTeacher = async function(e, teacherId) {
-            e.stopPropagation(); // Mencegah terpicunya klik pemilihan guru
-            if (is_preview) {
-                window.mockData.users = window.mockData.users.filter(u => u.id !== teacherId);
-                if(adminSelectedTeacherId === teacherId) adminSelectedTeacherId = null;
-                window.showToast('Akun guru dihapus dari daftar.', 'success');
-                renderAdminData();
-            } else {
-                try {
-                    await deleteDoc(doc(db, 'users', teacherId));
-                    if(adminSelectedTeacherId === teacherId) adminSelectedTeacherId = null;
-                    window.showToast('Akun guru berhasil dihapus dari Cloud.', 'success');
-                } catch(err) {
-                    window.showToast('Gagal menghapus: ' + err.message, 'error');
-                }
-            }
-        };
-
         window.sendMicroEval = async function(e, teacherId, journalId) {
             e.preventDefault();
             const input = document.getElementById(`micro-eval-${journalId}`);
             const msg = input.value.trim();
             if(!msg) return;
 
-            if (is_preview) {
-                const jIdx = window.mockData.journals.findIndex(j => j.id === journalId);
-                if(jIdx > -1) {
-                    window.mockData.journals[jIdx].adminNotes = msg;
-                    input.value = '';
-                    window.showToast('Catatan terkirim!', 'success');
-                    renderAdminData();
-                }
-            } else {
-                try {
-                    await updateDoc(doc(db, 'users', teacherId, 'journals', journalId), {
-                        adminNotes: msg
-                    });
-                    input.value = '';
-                    window.showToast('Catatan terkirim ke cloud!', 'success');
-                } catch(err) {
-                    window.showToast(err.message, 'error');
-                }
+            try {
+                await updateDoc(doc(db, 'users', teacherId, 'journals', journalId), {
+                    adminNotes: msg
+                });
+                input.value = '';
+                window.showToast('Catatan terkirim ke cloud!', 'success');
+            } catch(err) {
+                window.showToast(err.message, 'error');
             }
         };
 
@@ -527,32 +522,26 @@
                 adminName: currentUser.name || 'Kepala Madrasah'
             };
 
-            if (is_preview) {
-                window.mockData.evaluations.push({ id: 'eval_' + Date.now(), teacherId, ...evalObj });
+            try {
+                await addDoc(collection(db, 'users', teacherId, 'evaluations'), evalObj);
                 input.value = '';
                 window.showToast('Catatan evaluasi berhasil dikirim ke guru!', 'success');
-            } else {
-                try {
-                    await addDoc(collection(db, 'users', teacherId, 'evaluations'), evalObj);
-                    input.value = '';
-                    window.showToast('Catatan evaluasi berhasil dikirim ke guru!', 'success');
-                } catch(err) {
-                    window.showToast(err.message, 'error');
-                }
+            } catch(err) {
+                window.showToast(err.message, 'error');
             }
         };
 
         function renderAdminDashboardHTML() {
             return `
                 <div class="space-y-6">
-                    <div class="bg-white dark:bg-[#0f1423] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-xl space-y-4 transition-colors duration-200">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                         <div class="flex flex-col md:flex-row md:items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-500 flex items-center justify-center border border-blue-200 dark:border-blue-800/30 text-xl flex-shrink-0">
+                            <div class="w-12 h-12 rounded-full bg-blue-900/20 text-blue-500 flex items-center justify-center border border-blue-800/30 text-xl flex-shrink-0">
                                 <i class="fa-solid fa-eye"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1">Panel Pengawasan Akademik (Mata Dewa)</h3>
-                                <p class="text-sm text-slate-600 dark:text-slate-400">Pilih akun guru di bawah berdasarkan nama untuk meninjau jurnal harian lengkap serta mengirimkan catatan evaluasi.</p>
+                                <h3 class="text-xl font-bold text-slate-100 mb-1">Panel Pengawasan Akademik (Mata Dewa)</h3>
+                                <p class="text-sm text-slate-400">Pilih akun guru di bawah berdasarkan nama untuk meninjau jurnal harian lengkap serta mengirimkan catatan evaluasi.</p>
                             </div>
                         </div>
                     </div>
@@ -562,6 +551,7 @@
         }
 
         function initGuruLogic() {
+            loadGuruSchedules();
             loadGuruJournals();
             loadGuruGrades();
             loadGraderExamsData();
@@ -587,10 +577,39 @@
                     </div>
 
                     <div id="content-tab-jurnal" class="space-y-6">
+                        
+                        <!-- JADWAL MENGAJAR SAYA (GURU INPUT, EDIT & DELETE) -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                            <h3 class="text-base font-bold text-white"><i class="fa-solid fa-calendar-days text-indigo-400 mr-2"></i> Jadwal Mengajar Saya</h3>
+                            
+                            <form onsubmit="window.addGuruSchedule(event)" class="flex flex-col md:flex-row gap-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <input type="hidden" id="edit-sch-id">
+                                <select id="sch-hari" required class="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
+                                    <option value="">Pilih Hari...</option>
+                                    <option value="Senin">Senin</option>
+                                    <option value="Selasa">Selasa</option>
+                                    <option value="Rabu">Rabu</option>
+                                    <option value="Kamis">Kamis</option>
+                                    <option value="Jumat">Jumat</option>
+                                    <option value="Sabtu">Sabtu</option>
+                                    <option value="Ahad">Ahad</option>
+                                </select>
+                                <input type="text" id="sch-jamke" required placeholder="Jam Ke (cth: 1)" class="w-full md:w-28 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
+                                <input type="text" id="sch-waktu" required placeholder="Waktu (cth: 08:00 - 09:30)" class="w-full md:w-40 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
+                                <input type="text" id="sch-kelas" required placeholder="Kelas (cth: 7A)" class="w-full md:w-32 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
+                                <input type="text" id="sch-mapel" required placeholder="Mata Pelajaran" class="flex-1 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
+                                <button type="submit" id="btn-submit-sch" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-indigo-600/20 whitespace-nowrap">
+                                    <i class="fa-solid fa-plus mr-1"></i> Tambah
+                                </button>
+                            </form>
+
+                            <div id="guru-schedule-list" class="space-y-2 pt-2"></div>
+                        </div>
+
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <div class="flex justify-between items-center">
                                 <h3 class="text-base font-bold text-white"><i class="fa-solid fa-timeline text-indigo-400 mr-2"></i> Riwayat Jurnal Mengajar</h3>
-                                <div class="flex space-x-2">
+                                <div class="flex gap-2">
                                     <button onclick="window.exportJurnalPDF()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-lg shadow-rose-600/20">
                                         <i class="fa-solid fa-file-pdf"></i><span class="hidden sm:inline">Export PDF</span>
                                     </button>
@@ -602,7 +621,6 @@
                             <div id="guru-jurnal-grid" class="space-y-3 pt-2"></div>
                         </div>
 
-                        <!-- Form Jurnal -->
                         <div id="jurnal-form-container" class="hidden bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 shadow-2xl transition">
                             <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
                                 <h3 class="text-base font-bold text-white"><i class="fa-solid fa-pen text-indigo-400 mr-2"></i> Form Jurnal Mengajar</h3>
@@ -670,6 +688,7 @@
                                     <button onclick="window.toggleGradesForm()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
                                 </div>
                                 <form id="grades-form" class="space-y-4">
+                                    <input type="hidden" id="edit-grade-id">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div><label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Kelas</label><input type="text" id="g-kelas" required placeholder="Contoh: Kelas 7A / X MIPA 1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"></div>
                                         <div><label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Topik Penilaian</label><input type="text" id="g-topik" required placeholder="Contoh: Ulangan Harian Fiqih Bab 1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"></div>
@@ -875,28 +894,51 @@
                     userId: currentUser.uid
                 };
 
-                if (is_preview) {
+                try {
                     if (id) {
-                        const idx = window.mockData.journals.findIndex(j => j.id === id);
-                        if (idx !== -1) window.mockData.journals[idx] = { id, ...data };
+                        await setDoc(doc(db, 'users', currentUser.uid, 'journals', id), data);
                     } else {
-                        window.mockData.journals.push({ id: 'j_' + Date.now(), ...data });
+                        await addDoc(collection(db, 'users', currentUser.uid, 'journals'), data);
                     }
                     window.toggleJurnalForm();
-                    loadGuruJournals();
-                    window.showToast('Jurnal tersimpan');
-                } else {
-                    try {
-                        if (id) {
-                            await setDoc(doc(db, 'users', currentUser.uid, 'journals', id), data);
-                        } else {
-                            await addDoc(collection(db, 'users', currentUser.uid, 'journals'), data);
-                        }
-                        window.toggleJurnalForm();
-                        window.showToast('Jurnal berhasil disimpan ke Cloud!');
-                    } catch (err) {
-                        window.showToast(err.message, 'error');
+                    window.showToast('Jurnal berhasil disimpan ke Cloud!');
+                } catch (err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+
+            if(e.target.id === 'grades-form') {
+                e.preventDefault();
+                const id = document.getElementById('edit-grade-id').value;
+                const kelas = document.getElementById('g-kelas').value;
+                const topik = document.getElementById('g-topik').value;
+                const rawData = document.getElementById('g-raw-data').value;
+                
+                const dataSiswa = [];
+                rawData.split('\n').forEach(line => {
+                    const parts = line.trim().split(/\s+/);
+                    if (parts.length >= 2) {
+                        const nilai = parseFloat(parts.pop());
+                        const nama = parts.join(' ');
+                        if (nama && !isNaN(nilai)) dataSiswa.push({ nama, nilai });
                     }
+                });
+
+                if (dataSiswa.length === 0) return window.showToast('Format data tidak valid!', 'error');
+
+                const gradeObj = { kelas, topik, tanggal: new Date().toISOString().split('T')[0], dataSiswa, userId: currentUser.uid };
+
+                try {
+                    if (id) {
+                        await setDoc(doc(db, 'users', currentUser.uid, 'grades', id), gradeObj);
+                        window.showToast('Rekap nilai berhasil diperbarui!');
+                    } else {
+                        await addDoc(collection(db, 'users', currentUser.uid, 'grades'), gradeObj);
+                        window.showToast('Rekap nilai berhasil disimpan ke Cloud!');
+                    }
+                    window.toggleGradesForm();
+                } catch (err) {
+                    window.showToast(err.message, 'error');
                 }
             }
         });
@@ -916,47 +958,100 @@
         };
 
         window.deleteJurnal = async function(id) {
-            if (is_preview) {
-                window.mockData.journals = window.mockData.journals.filter(j => j.id !== id);
-                loadGuruJournals();
-                window.showToast('Jurnal dihapus', 'success');
-            } else {
-                try {
-                    await deleteDoc(doc(db, 'users', currentUser.uid, 'journals', id));
-                    window.showToast('Jurnal berhasil dihapus', 'success');
-                } catch (err) {
-                    window.showToast(err.message, 'error');
-                }
+            try {
+                await deleteDoc(doc(db, 'users', currentUser.uid, 'journals', id));
+                window.showToast('Jurnal berhasil dihapus', 'success');
+            } catch (err) {
+                window.showToast(err.message, 'error');
             }
         };
 
+        window.exportJurnalPDF = function() {
+            if (cachedJournals.length === 0) return window.showToast('Tidak ada jurnal untuk diekspor', 'error');
+            
+            window.showToast('Membangun dokumen PDF...', 'success');
+
+            const printElement = document.createElement('div');
+            
+            let htmlContent = `
+                <div style="padding: 40px; font-family: sans-serif; color: black; background: white;">
+                    <div style="text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px;">
+                        <h2 style="margin: 0; color: #1e293b; font-size: 24px; text-transform: uppercase;">Riwayat Jurnal Mengajar</h2>
+                        <h4 style="margin: 10px 0 0 0; color: #475569; font-size: 16px;">Pengajar: ${currentUser.name || currentUser.email}</h4>
+                        <p style="margin: 5px 0 0 0; color: #64748b; font-size: 12px;">Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</p>
+                    </div>
+            `;
+
+            cachedJournals.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).forEach(j => {
+                htmlContent += `
+                    <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; margin-bottom: 20px; page-break-inside: avoid; background-color: #f8fafc;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+                            <div>
+                                <span style="background-color: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;">${j.mapel}</span>
+                                ${j.kelas ? `<span style="background-color: #e0e7ff; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-left: 5px;">${j.kelas}</span>` : ''}
+                                <h3 style="margin: 10px 0 0 0; font-size: 16px; color: #0f172a;">${j.materi}</h3>
+                            </div>
+                            <div style="text-align: right; color: #64748b; font-size: 12px; font-weight: bold;">
+                                ${j.tanggal}<br>${j.waktu}
+                            </div>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <tbody>
+                                <tr><td style="padding: 4px 0; width: 120px; vertical-align: top;"><b>Tujuan Pembelajaran</b></td><td style="padding: 4px 0;">: ${j.tujuan}</td></tr>
+                                <tr><td style="padding: 4px 0; vertical-align: top;"><b>Metode & Media</b></td><td style="padding: 4px 0;">: ${j.metode} | ${j.media}</td></tr>
+                                <tr><td style="padding: 4px 0; vertical-align: top;"><b>Kehadiran</b></td><td style="padding: 4px 0;">: ${j.kehadiran}</td></tr>
+                                <tr><td style="padding: 4px 0; vertical-align: top;"><b>Capaian</b></td><td style="padding: 4px 0;">: ${j.capaian}</td></tr>
+                                <tr><td style="padding: 4px 0; vertical-align: top;"><b style="color: #b91c1c;">Kendala</b></td><td style="padding: 4px 0; color: #b91c1c;">: ${j.kendala}</td></tr>
+                                <tr><td style="padding: 4px 0; vertical-align: top;"><b style="color: #1d4ed8;">Tindak Lanjut</b></td><td style="padding: 4px 0; color: #1d4ed8;">: ${j.tindakLanjut}</td></tr>
+                            </tbody>
+                        </table>
+                `;
+
+                if (j.adminNotes) {
+                    htmlContent += `
+                        <div style="margin-top: 15px; padding: 12px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px;">
+                            <strong style="color: #1e40af; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">Catatan Kepala Madrasah / Admin:</strong>
+                            <p style="margin: 0; font-size: 12px; color: #1e3a8a; font-style: italic;">"${j.adminNotes}"</p>
+                        </div>
+                    `;
+                }
+
+                htmlContent += `</div>`;
+            });
+
+            htmlContent += `</div>`;
+            printElement.innerHTML = htmlContent;
+
+            const opt = {
+                margin:       0.5,
+                filename:     `Jurnal_Mengajar_${currentUser.name || 'Guru'}_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, backgroundColor: '#ffffff' },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(printElement).save().then(() => {
+                window.showToast('Dokumen berhasil diunduh (PDF)!', 'success');
+            });
+        };
+
         function loadGuruJournals() {
-            if (is_preview) {
-                cachedJournals = window.mockData.journals.filter(j => j.userId === currentUser.uid);
+            onSnapshot(collection(db, 'users', currentUser.uid, 'journals'), (snapshot) => {
+                cachedJournals = [];
+                snapshot.forEach(doc => cachedJournals.push({ id: doc.id, ...doc.data() }));
                 renderJournalsUI(cachedJournals);
-            } else {
-                onSnapshot(collection(db, 'users', currentUser.uid, 'journals'), (snapshot) => {
-                    cachedJournals = [];
-                    snapshot.forEach(doc => cachedJournals.push({ id: doc.id, ...doc.data() }));
-                    renderJournalsUI(cachedJournals);
-                }, (err) => { console.error(err); });
-            }
+            }, (err) => { console.error(err); });
         }
 
         function loadGuruEvaluations() {
             const c = document.getElementById('guru-eval-list');
             if(!c) return;
             
-            if(is_preview) {
-                const evals = window.mockData.evaluations.filter(e => e.teacherId === currentUser.uid);
+            onSnapshot(collection(db, 'users', currentUser.uid, 'evaluations'), (snapshot) => {
+                const evals = [];
+                snapshot.forEach(doc => evals.push({ id: doc.id, ...doc.data() }));
                 renderEvaluationsUI(evals);
-            } else {
-                onSnapshot(collection(db, 'users', currentUser.uid, 'evaluations'), (snapshot) => {
-                    const evals = [];
-                    snapshot.forEach(doc => evals.push({ id: doc.id, ...doc.data() }));
-                    renderEvaluationsUI(evals);
-                }, (err) => { console.error(err); });
-            }
+            }, (err) => { console.error(err); });
         }
 
         function renderEvaluationsUI(evals) {
@@ -1015,58 +1110,94 @@
             `).join('');
         }
 
-        window.exportJurnalPDF = function() {
-            if (cachedJournals.length === 0) {
-                return window.showToast('Tidak ada data jurnal untuk diekspor', 'error');
+        function loadGuruSchedules() {
+            onSnapshot(collection(db, 'users', currentUser.uid, 'schedules'), (snapshot) => {
+                const schedules = [];
+                snapshot.forEach(doc => schedules.push({ id: doc.id, ...doc.data() }));
+                renderGuruSchedulesUI(schedules);
+            }, (err) => { console.error(err); });
+        }
+
+        function renderGuruSchedulesUI(schedules) {
+            const container = document.getElementById('guru-schedule-list');
+            if(!container) return;
+            if (schedules.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic mt-3">Belum ada jadwal mengajar yang ditambahkan.</p>`;
+                return;
             }
-
-            window.showToast('Membangun dokumen PDF Jurnal...', 'success');
-
-            const printElement = document.createElement('div');
-            
-            let journalsHTML = cachedJournals.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).map((j, index) => `
-                <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; page-break-inside: avoid;">
-                    <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between;">
-                        <strong style="color: #0f172a; font-size: 14px;">${j.materi}</strong>
-                        <span style="color: #475569; font-size: 12px;">${j.tanggal} (${j.waktu})</span>
+            container.innerHTML = schedules.sort((a,b) => {
+                const days = { 'Senin':1, 'Selasa':2, 'Rabu':3, 'Kamis':4, 'Jumat':5, 'Sabtu':6, 'Ahad':7 };
+                if(days[a.hari] !== days[b.hari]) return days[a.hari] - days[b.hari];
+                return parseInt(a.jamKe) - parseInt(b.jamKe);
+            }).map(s => `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-950 border border-slate-800 px-4 py-3 rounded-xl gap-3 hover:border-slate-700 transition-colors">
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/25 uppercase w-20 text-center flex-shrink-0">${s.hari}</span>
+                        <span class="text-[10px] text-slate-300 font-bold bg-slate-900 px-2 py-1 rounded-lg border border-slate-800">Jam ke-${s.jamKe}</span>
+                        <span class="text-xs text-slate-300 font-mono bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1.5"></i>${s.waktu}</span>
+                        <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/25 whitespace-nowrap">${s.kelas}</span>
+                        <span class="text-xs font-bold text-white flex-1 truncate">${s.mapel}</span>
                     </div>
-                    <table style="width: 100%; font-size: 12px; color: #334155; border: none;">
-                        <tr><td style="width: 120px; font-weight: bold; padding-bottom: 4px; border: none; text-align: left;">Kelas / Mapel</td><td style="border: none; text-align: left;">: ${j.kelas || '-'} / ${j.mapel}</td></tr>
-                        <tr><td style="font-weight: bold; padding-bottom: 4px; border: none; text-align: left;">Tujuan</td><td style="border: none; text-align: left;">: ${j.tujuan}</td></tr>
-                        <tr><td style="font-weight: bold; padding-bottom: 4px; border: none; text-align: left;">Metode & Media</td><td style="border: none; text-align: left;">: ${j.metode} | ${j.media}</td></tr>
-                        <tr><td style="font-weight: bold; padding-bottom: 4px; border: none; text-align: left;">Kehadiran</td><td style="border: none; text-align: left;">: ${j.kehadiran}</td></tr>
-                        <tr><td style="font-weight: bold; padding-bottom: 4px; border: none; text-align: left;">Capaian</td><td style="border: none; text-align: left;">: ${j.capaian}</td></tr>
-                        <tr><td style="font-weight: bold; padding-bottom: 4px; color: #e11d48; border: none; text-align: left;">Kendala</td><td style="border: none; text-align: left;">: ${j.kendala}</td></tr>
-                        <tr><td style="font-weight: bold; padding-bottom: 4px; color: #2563eb; border: none; text-align: left;">Tindak Lanjut</td><td style="border: none; text-align: left;">: ${j.tindakLanjut}</td></tr>
-                    </table>
-                    ${j.adminNotes ? `
-                        <div style="margin-top: 10px; padding: 10px; background-color: #eff6ff; border-left: 4px solid #3b82f6; font-size: 12px;">
-                            <strong style="color: #1d4ed8; display: block; margin-bottom: 4px;">Catatan Admin / Kamad:</strong>
-                            <p style="margin: 0; color: #1e3a8a;">${j.adminNotes}</p>
-                        </div>
-                    ` : ''}
+                    <div class="flex items-center space-x-2">
+                        <button onclick="window.editGuruSchedule('${s.id}', '${s.hari}', '${s.jamKe}', '${s.waktu}', '${s.kelas}', '${s.mapel.replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300 p-1.5 transition" title="Edit Jadwal"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="window.deleteGuruSchedule('${s.id}')" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Hapus Jadwal"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
                 </div>
             `).join('');
+        }
 
-            printElement.innerHTML = `
-                <div style="padding: 30px; font-family: sans-serif; color: black; background: white;">
-                    <h2 style="text-align: center; margin-bottom: 5px; color: #1e293b;">REKAPITULASI JURNAL MENGAJAR</h2>
-                    <h4 style="text-align: center; margin-top: 0; color: #475569; margin-bottom: 30px;">Guru: ${currentUser ? (currentUser.name || currentUser.email) : 'Pengajar'}</h4>
-                    ${journalsHTML}
-                </div>
-            `;
-
-            const opt = {
-                margin:       0.5,
-                filename:     `Jurnal_Mengajar_${currentUser ? (currentUser.name || 'Guru').replace(/\s+/g, '_') : 'Guru'}_${new Date().toISOString().split('T')[0]}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, backgroundColor: '#ffffff' },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        window.addGuruSchedule = async function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-sch-id').value;
+            const data = {
+                hari: document.getElementById('sch-hari').value,
+                jamKe: document.getElementById('sch-jamke').value.trim(),
+                waktu: document.getElementById('sch-waktu').value.trim(),
+                kelas: document.getElementById('sch-kelas').value.trim(),
+                mapel: document.getElementById('sch-mapel').value.trim(),
+                userId: currentUser.uid
             };
+            
+            try {
+                if(editId) {
+                    await updateDoc(doc(db, 'users', currentUser.uid, 'schedules', editId), data);
+                    window.showToast('Jadwal berhasil diperbarui di Cloud!', 'success');
+                } else {
+                    await addDoc(collection(db, 'users', currentUser.uid, 'schedules'), data);
+                    window.showToast('Jadwal berhasil ditambahkan ke Cloud!', 'success');
+                }
+                resetSchForm(e.target);
+            } catch(err) {
+                window.showToast(err.message, 'error');
+            }
+        };
 
-            html2pdf().set(opt).from(printElement).save().then(() => {
-                window.showToast('Dokumen Jurnal berhasil diunduh (PDF)!', 'success');
-            });
+        function resetSchForm(formEl) {
+            formEl.reset();
+            document.getElementById('edit-sch-id').value = '';
+            document.getElementById('btn-submit-sch').innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Tambah';
+        }
+
+        window.editGuruSchedule = function(id, hari, jamKe, waktu, kelas, mapel) {
+            document.getElementById('edit-sch-id').value = id;
+            document.getElementById('sch-hari').value = hari;
+            document.getElementById('sch-jamke').value = jamKe;
+            document.getElementById('sch-waktu').value = waktu;
+            document.getElementById('sch-kelas').value = kelas;
+            document.getElementById('sch-mapel').value = mapel;
+            document.getElementById('btn-submit-sch').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Simpan';
+            
+            const formContainer = document.getElementById('sch-hari');
+            if (formContainer) window.scrollTo({ top: formContainer.offsetTop - 150, behavior: 'smooth' });
+        };
+
+        window.deleteGuruSchedule = async function(scheduleId) {
+            try {
+                await deleteDoc(doc(db, 'users', currentUser.uid, 'schedules', scheduleId));
+                window.showToast('Jadwal berhasil dihapus', 'success');
+            } catch(err) {
+                window.showToast(err.message, 'error');
+            }
         };
 
         window.switchSubNilai = function(sub) {
@@ -1088,60 +1219,43 @@
         window.toggleGradesForm = function() {
             const container = document.getElementById('grades-form-container');
             container.classList.toggle('hidden');
-            if(!container.classList.contains('hidden')) document.getElementById('grades-form').reset();
+            if(!container.classList.contains('hidden')) {
+                document.getElementById('grades-form').reset();
+                document.getElementById('edit-grade-id').value = '';
+            }
         };
 
-        document.getElementById('app').addEventListener('submit', async (e) => {
-            if(e.target.id === 'grades-form') {
-                e.preventDefault();
-                const kelas = document.getElementById('g-kelas').value;
-                const topik = document.getElementById('g-topik').value;
-                const rawData = document.getElementById('g-raw-data').value;
-                
-                const dataSiswa = [];
-                rawData.split('\n').forEach(line => {
-                    const parts = line.trim().split(/\s+/);
-                    if (parts.length >= 2) {
-                        const nilai = parseFloat(parts.pop());
-                        const nama = parts.join(' ');
-                        if (nama && !isNaN(nilai)) dataSiswa.push({ nama, nilai });
-                    }
-                });
+        window.editGrade = function(id) {
+            const g = cachedGrades.find(item => item.id === id);
+            if (!g) return;
+            const container = document.getElementById('grades-form-container');
+            container.classList.remove('hidden');
+            document.getElementById('edit-grade-id').value = g.id;
+            document.getElementById('g-kelas').value = g.kelas || '';
+            document.getElementById('g-topik').value = g.topik || '';
+            
+            const rawData = g.dataSiswa.map(s => `${s.nama}\t${s.nilai}`).join('\n');
+            document.getElementById('g-raw-data').value = rawData;
+            
+            window.scrollTo({ top: container.offsetTop - 50, behavior: 'smooth' });
+        };
 
-                if (dataSiswa.length === 0) return window.showToast('Format data tidak valid!', 'error');
-
-                const gradeObj = { kelas, topik, tanggal: new Date().toISOString().split('T')[0], dataSiswa, userId: currentUser.uid };
-
-                if (is_preview) {
-                    window.mockData.grades.push({ id: 'g_' + Date.now(), ...gradeObj });
-                    window.toggleGradesForm();
-                    loadGuruGrades();
-                    window.showToast('Rekap tersimpan!');
-                } else {
-                    try {
-                        await addDoc(collection(db, 'users', currentUser.uid, 'grades'), gradeObj);
-                        window.toggleGradesForm();
-                        window.showToast('Rekap nilai berhasil disimpan ke Cloud!');
-                    } catch (err) {
-                        window.showToast(err.message, 'error');
-                    }
-                }
+        window.deleteGrade = async function(id) {
+            try {
+                await deleteDoc(doc(db, 'users', currentUser.uid, 'grades', id));
+                window.showToast('Rekap berhasil dihapus', 'success');
+            } catch (err) {
+                window.showToast(err.message, 'error');
             }
-        });
+        };
 
         function loadGuruGrades() {
-            if (is_preview) {
-                cachedGrades = window.mockData.grades.filter(g => g.userId === currentUser.uid);
+            onSnapshot(collection(db, 'users', currentUser.uid, 'grades'), (snapshot) => {
+                cachedGrades = [];
+                snapshot.forEach(doc => cachedGrades.push({ id: doc.id, ...doc.data() }));
                 renderGradesUI(cachedGrades);
                 populateMatrixDropdown(cachedGrades);
-            } else {
-                onSnapshot(collection(db, 'users', currentUser.uid, 'grades'), (snapshot) => {
-                    cachedGrades = [];
-                    snapshot.forEach(doc => cachedGrades.push({ id: doc.id, ...doc.data() }));
-                    renderGradesUI(cachedGrades);
-                    populateMatrixDropdown(cachedGrades);
-                }, (err) => { console.error(err); });
-            }
+            }, (err) => { console.error(err); });
         }
 
         function renderGradesUI(grades) {
@@ -1158,7 +1272,11 @@
                             <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-md border border-indigo-500/25 uppercase">${g.kelas}</span>
                             <h4 class="text-sm font-bold text-white mt-1.5">${g.topik}</h4>
                         </div>
-                        <span class="text-xs text-slate-400 font-medium">${g.tanggal}</span>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xs text-slate-400 font-medium">${g.tanggal}</span>
+                            <button onclick="window.editGrade('${g.id}')" class="text-indigo-400 hover:text-indigo-300 transition" title="Edit Nilai"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="window.deleteGrade('${g.id}')" class="text-rose-400 hover:text-rose-300 transition" title="Hapus Nilai"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
@@ -1343,19 +1461,24 @@
             if (view === 'dashboard') renderGraderDash();
         };
 
-        function loadGraderExamsData() {
-            if (is_preview) {
-                graderExams = window.mockData.exams;
-                renderGraderDash();
-            } else {
-                onSnapshot(collection(db, 'exams'), (snapshot) => {
-                    graderExams = [];
-                    snapshot.forEach(doc => graderExams.push({ id: doc.id, ...doc.data() }));
-                    if(document.getElementById('g-view-dashboard') && !document.getElementById('g-view-dashboard').classList.contains('hidden')) {
-                        renderGraderDash();
-                    }
-                }, (err) => { console.error(err); });
+        window.deleteGraderExam = async function(id) {
+            try {
+                await deleteDoc(doc(db, 'exams', id));
+                window.showToast('Instrumen ujian berhasil dihapus', 'success');
+            } catch(err) {
+                window.showToast(err.message, 'error');
             }
+        };
+
+        function loadGraderExamsData() {
+            const qRef = query(collection(db, 'exams'), where('userId', '==', currentUser.uid));
+            onSnapshot(qRef, (snapshot) => {
+                graderExams = [];
+                snapshot.forEach(doc => graderExams.push({ id: doc.id, ...doc.data() }));
+                if(document.getElementById('g-view-dashboard') && !document.getElementById('g-view-dashboard').classList.contains('hidden')) {
+                    renderGraderDash();
+                }
+            }, (err) => { console.error(err); });
         }
 
         function renderGraderDash() {
@@ -1380,28 +1503,11 @@
                     <div class="flex gap-2 pt-1">
                         <button onclick="window.startKoreksi('${e.id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg text-xs font-bold transition shadow-md shadow-blue-600/20">Koreksi</button>
                         <button onclick="window.editGraderExam('${e.id}')" class="bg-slate-800 text-slate-300 px-3.5 rounded-lg border border-slate-700 hover:bg-slate-700 transition" title="Edit Kunci"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="window.deleteGraderExam('${e.id}', '${e.title}')" class="bg-slate-800 text-rose-400 hover:text-rose-300 px-3.5 rounded-lg border border-slate-700 hover:bg-slate-700 transition" title="Hapus Kunci"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button onclick="window.deleteGraderExam('${e.id}')" class="bg-slate-800 text-rose-400 px-3.5 rounded-lg border border-slate-700 hover:bg-slate-700 transition" title="Hapus Kunci"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
                 </div>
             `).join('');
         }
-
-        window.deleteGraderExam = async function(id, title) {
-            if(!confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus instrumen ujian "${title}"?`)) return;
-            
-            if (is_preview) {
-                window.mockData.exams = window.mockData.exams.filter(x => x.id !== id);
-                loadGraderExamsData();
-                window.showToast('Kunci jawaban berhasil dihapus.', 'success');
-            } else {
-                try {
-                    await deleteDoc(doc(db, 'exams', id));
-                    window.showToast('Kunci jawaban berhasil dihapus dari Cloud.', 'success');
-                } catch(err) {
-                    window.showToast(err.message, 'error');
-                }
-            }
-        };
 
         let activeChartInstance = null;
         window.openExamAnalytics = function(examId) {
@@ -1575,29 +1681,17 @@
                 questions: editorQuestions,
                 userId: currentUser ? currentUser.uid : 'mock-guru'
             };
-            if(is_preview) {
+            try {
                 if(currentExamId) {
-                    const idx = window.mockData.exams.findIndex(x => x.id === currentExamId);
-                    if(idx > -1) window.mockData.exams[idx] = {id: currentExamId, ...data};
+                    await setDoc(doc(db, 'exams', currentExamId), data);
                 } else {
-                    window.mockData.exams.push({id: 'e_'+Date.now(), ...data});
+                    await addDoc(collection(db, 'exams'), data);
                 }
-                window.showToast('Instrumen tersimpan.');
+                window.showToast('Kunci jawaban berhasil disimpan ke Cloud!');
                 window.navGrader('dashboard');
                 currentExamId = null;
-            } else {
-                try {
-                    if(currentExamId) {
-                        await setDoc(doc(db, 'exams', currentExamId), data);
-                    } else {
-                        await addDoc(collection(db, 'exams'), data);
-                    }
-                    window.showToast('Kunci jawaban berhasil disimpan ke Cloud!');
-                    window.navGrader('dashboard');
-                    currentExamId = null;
-                } catch(err) {
-                    window.showToast(err.message, 'error');
-                }
+            } catch(err) {
+                window.showToast(err.message, 'error');
             }
         };
 
@@ -1722,15 +1816,18 @@
             const syncTopik = e.topic ? `Ujian: ${e.title} (${e.topic})` : `Ujian: ${e.title}`;
             const syncKelas = e.className || 'Tanpa Kelas';
 
-            if (is_preview) {
-                const existingGrade = window.mockData.grades.find(g => g.topik === syncTopik && g.kelas === syncKelas && g.userId === currentUser.uid);
-                if (existingGrade) {
-                    const sIdx = existingGrade.dataSiswa.findIndex(s => s.nama === stuName);
-                    if (sIdx > -1) existingGrade.dataSiswa[sIdx].nilai = final;
-                    else existingGrade.dataSiswa.push({ nama: stuName, nilai: final });
+            try {
+                const qRef = query(collection(db, 'users', currentUser.uid, 'grades'), where('topik', '==', syncTopik), where('kelas', '==', syncKelas));
+                const snap = await getDocs(qRef);
+                if (!snap.empty) {
+                    const docTarget = snap.docs[0];
+                    let dataSiswa = docTarget.data().dataSiswa || [];
+                    let sIdx = dataSiswa.findIndex(s => s.nama === stuName);
+                    if(sIdx > -1) dataSiswa[sIdx].nilai = final;
+                    else dataSiswa.push({nama: stuName, nilai: final});
+                    await updateDoc(doc(db, 'users', currentUser.uid, 'grades', docTarget.id), { dataSiswa });
                 } else {
-                    window.mockData.grades.push({
-                        id: 'g_' + Date.now(),
+                    await addDoc(collection(db, 'users', currentUser.uid, 'grades'), {
                         kelas: syncKelas,
                         topik: syncTopik,
                         tanggal: dateStr,
@@ -1738,30 +1835,8 @@
                         userId: currentUser.uid
                     });
                 }
-                loadGuruGrades();
-            } else {
-                try {
-                    const qRef = query(collection(db, 'users', currentUser.uid, 'grades'), where('topik', '==', syncTopik), where('kelas', '==', syncKelas));
-                    const snap = await getDocs(qRef);
-                    if (!snap.empty) {
-                        const docTarget = snap.docs[0];
-                        let dataSiswa = docTarget.data().dataSiswa || [];
-                        let sIdx = dataSiswa.findIndex(s => s.nama === stuName);
-                        if(sIdx > -1) dataSiswa[sIdx].nilai = final;
-                        else dataSiswa.push({nama: stuName, nilai: final});
-                        await updateDoc(doc(db, 'users', currentUser.uid, 'grades', docTarget.id), { dataSiswa });
-                    } else {
-                        await addDoc(collection(db, 'users', currentUser.uid, 'grades'), {
-                            kelas: syncKelas,
-                            topik: syncTopik,
-                            tanggal: dateStr,
-                            dataSiswa: [{ nama: stuName, nilai: final }],
-                            userId: currentUser.uid
-                        });
-                    }
-                } catch(err) {
-                    console.error("Auto-sync error:", err);
-                }
+            } catch(err) {
+                console.error("Auto-sync error:", err);
             }
 
             document.getElementById('grader-result-modal').classList.remove('hidden');
@@ -1771,7 +1846,7 @@
             document.getElementById('grader-result-modal').classList.add('hidden');
             if (nextStudent) {
                 document.getElementById('gk-student').value = '';
-                document.querySelectorAll('.ans-pg button, .ans-pgk button').forEach(b => {
+                document.querySelectorAll('.ans-pg button, .ans-pgk button, .ans-bs button, .ans-tt button').forEach(b => {
                     b.classList.remove('bg-blue-600', 'bg-emerald-600', 'text-white', 'border-transparent');
                     b.classList.add('bg-slate-900', 'text-slate-400', 'border-slate-700');
                     b.dataset.sel = 'false';
