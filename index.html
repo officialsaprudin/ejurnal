@@ -48,9 +48,32 @@
         import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, updateDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { collectionGroup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const is_preview = false; 
+        const is_preview = true; 
 
-        // ⚠️ MASUKKAN FIREBASE CONFIG ANDA DI SINI
+        window.mockData = {
+            users: [
+                { id: 'mock-guru-id', name: 'Saprudin, S.Ag', email: 'saprudin@ud.in', role: 'guru' },
+                { id: 'mock-guru-2', name: 'Umar Abu Zubair, S.H', email: 'muzkyn123@gmail.com', role: 'guru' }
+            ],
+            journals: [
+                { id: 'j_1', userId: 'mock-guru-id', kelas: 'Kelas 5', tanggal: '2026-08-19', waktu: '09.05 - 10.30', mapel: 'Al-Qur\'an Hadis', materi: 'Tarqiq, Tafkhim, jawazul wajhain', tujuan: 'Agar thullab bisa mengetahui hukum tajwid tentang Tarqiq, Tafkhim, jawazul wajhain', metode: 'Ceramah & Tanya Jawab', media: 'Buku LKS, PROYEKTOR', kehadiran: 'Hadir semua', capaian: 'Secara umum sudah paham', kendala: 'Tidak ada', tindakLanjut: 'Minggu depan akan dikasih latihan' }
+            ],
+            grades: [
+                { id: 'g_1', userId: 'mock-guru-id', kelas: 'Kelas 5', topik: 'Menganalisis Hukum bacaan Mim Sukun surah Yasiin (13-22)', tanggal: '2026-08-21', dataSiswa: [
+                    { nama: 'Keisya', nilai: 100 }, { nama: 'Annisa', nilai: 100 }, { nama: 'Alifa Farodillah', nilai: 98 }, { nama: 'Afiqa', nilai: 85 }, { nama: 'Asyifa', nilai: 98 }, { nama: 'Nayla', nilai: 100 }, { nama: 'Zidan', nilai: 86 }, { nama: 'Alwi', nilai: 78 }, { nama: 'Rahmad nurizky', nilai: 100 }, { nama: 'Abiyu', nilai: 100 }, { nama: 'Dzihni', nilai: 100 }
+                ]}
+            ],
+            exams: [
+                { id: 'e_1', userId: 'mock-guru-id', className: '7A', title: 'Ujian Fiqih Bab Thaharah', topic: 'Thaharah Dasar', kkm: 75, questions: [
+                    { id: 'q_1', type: 'PG', text: 'Air yang suci dan menyucikan disebut air...', key: 'A', weight: 1 }
+                ]}
+            ],
+            schedules: [
+                { id: 'sch_1', userId: 'mock-guru-id', hari: 'Senin', jamKe: '1', waktu: '08:00 - 09:30', kelas: 'Kelas 5', mapel: 'Al-Qur\'an Hadis' }
+            ],
+            evaluations: []
+        };
+
         const firebaseConfig = {
   apiKey: "AIzaSyBdiFDd3HFwy82G4_vQE3gOp_zi6jjBCig",
   authDomain: "jurnal-database.firebaseapp.com",
@@ -61,11 +84,13 @@
   measurementId: "G-JXVKCVFSFX"
         };
 
-        let app, auth, db;
-        if (!is_preview) {
+        let app, auth = null, db = null;
+        try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase init error:", e);
         }
 
         let currentUser = null;
@@ -140,29 +165,42 @@
 
         function initApp() {
             initTheme();
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUser = user;
-                    try {
-                        const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
-                        if (!userDoc.empty) {
-                            userRole = userDoc.docs[0].data().role || 'guru';
-                            currentUser.name = userDoc.docs[0].data().name || user.email.split('@')[0];
-                        } else {
-                            const detectedRole = user.email.toLowerCase().includes('admin') ? 'admin' : 'guru';
-                            await setDoc(doc(db, 'users', user.uid), { role: detectedRole, name: user.email.split('@')[0], email: user.email });
-                            userRole = detectedRole;
-                            currentUser.name = user.email.split('@')[0];
-                        }
-                    } catch (e) {
-                        userRole = user.email.toLowerCase().includes('admin') ? 'admin' : 'guru';
-                    }
-                    renderMainDashboard();
-                } else {
-                    currentUser = null;
+            if (is_preview) {
+                currentUser = { uid: 'mock-guru-id', email: 'saprudin@ud.in', name: 'Saprudin, S.Ag', role: 'guru' };
+                userRole = 'guru';
+                renderMainDashboard();
+            } else {
+                if (!auth) {
+                    window.showToast('Gagal inisialisasi Firebase Auth.', 'error');
                     window.renderLogin();
+                    return;
                 }
-            });
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        try {
+                            if (db) {
+                                const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
+                                if (!userDoc.empty) {
+                                    userRole = userDoc.docs[0].data().role || 'guru';
+                                    currentUser.name = userDoc.docs[0].data().name || user.email.split('@')[0];
+                                } else {
+                                    const detectedRole = user.email.toLowerCase().includes('admin') ? 'admin' : 'guru';
+                                    await setDoc(doc(db, 'users', user.uid), { role: detectedRole, name: user.email.split('@')[0], email: user.email });
+                                    userRole = detectedRole;
+                                    currentUser.name = user.email.split('@')[0];
+                                }
+                            }
+                        } catch (e) {
+                            userRole = user.email.toLowerCase().includes('admin') ? 'admin' : 'guru';
+                        }
+                        renderMainDashboard();
+                    } else {
+                        currentUser = null;
+                        window.renderLogin();
+                    }
+                });
+            }
         }
 
         window.renderLogin = function(isRegister = false) {
@@ -235,22 +273,32 @@
                 const nameInput = document.getElementById('reg-name');
                 const fullName = nameInput ? nameInput.value : email.split('@')[0];
 
-                try {
-                    if (isRegister) {
-                        const cred = await createUserWithEmailAndPassword(auth, email, password);
-                        const assignedRole = email.toLowerCase().includes('admin') ? 'admin' : 'guru';
-                        await setDoc(doc(db, 'users', cred.user.uid), {
-                            role: assignedRole,
-                            name: fullName,
-                            email: email
-                        });
-                        window.showToast('Pendaftaran akun berhasil!', 'success');
-                    } else {
-                        await signInWithEmailAndPassword(auth, email, password);
-                        window.showToast('Berhasil masuk ke sistem!', 'success');
+                if (!is_preview) {
+                    try {
+                        if (isRegister) {
+                            const cred = await createUserWithEmailAndPassword(auth, email, password);
+                            const assignedRole = email.toLowerCase().includes('admin') ? 'admin' : 'guru';
+                            if (db) {
+                                await setDoc(doc(db, 'users', cred.user.uid), {
+                                    role: assignedRole,
+                                    name: fullName,
+                                    email: email
+                                });
+                            }
+                            window.showToast('Pendaftaran akun berhasil!', 'success');
+                        } else {
+                            await signInWithEmailAndPassword(auth, email, password);
+                            window.showToast('Berhasil masuk ke sistem!', 'success');
+                        }
+                    } catch (err) {
+                        window.showToast(err.message, 'error');
                     }
-                } catch (err) {
-                    window.showToast(err.message, 'error');
+                } else {
+                    const assignedRole = email.toLowerCase().includes('admin') ? 'admin' : 'guru';
+                    currentUser = { uid: assignedRole === 'admin' ? 'mock-admin-id' : 'mock-guru-id', email, name: fullName, role: assignedRole };
+                    userRole = currentUser.role;
+                    window.renderMainDashboard();
+                    window.showToast('Berhasil masuk mode simulasi!', 'success');
                 }
             });
         };
@@ -287,7 +335,12 @@
             `;
 
             document.getElementById('btn-logout').addEventListener('click', async () => {
-                await signOut(auth);
+                if (is_preview) {
+                    currentUser = null;
+                    window.renderLogin();
+                } else {
+                    if (auth) await signOut(auth);
+                }
             });
 
             if (userRole === 'admin') initAdminLogic();
@@ -302,27 +355,36 @@
             const container = document.getElementById('admin-teacher-list');
             if(!container) return;
 
-            const updateAdminUI = () => renderAdminData();
+            if (is_preview) {
+                adminCachedUsers = window.mockData.users;
+                adminCachedJournals = window.mockData.journals;
+                adminCachedGrades = window.mockData.grades;
+                adminCachedSchedules = window.mockData.schedules;
+                renderAdminData();
+            } else {
+                if (!db) return;
+                const updateAdminUI = () => renderAdminData();
 
-            onSnapshot(collection(db, 'users'), (snap) => {
-                adminCachedUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateAdminUI();
-            });
+                onSnapshot(collection(db, 'users'), (snap) => {
+                    adminCachedUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    updateAdminUI();
+                });
 
-            onSnapshot(collectionGroup(db, 'journals'), (snap) => {
-                adminCachedJournals = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
-                updateAdminUI();
-            });
+                onSnapshot(collectionGroup(db, 'journals'), (snap) => {
+                    adminCachedJournals = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
+                    updateAdminUI();
+                });
 
-            onSnapshot(collectionGroup(db, 'grades'), (snap) => {
-                adminCachedGrades = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
-                updateAdminUI();
-            });
+                onSnapshot(collectionGroup(db, 'grades'), (snap) => {
+                    adminCachedGrades = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
+                    updateAdminUI();
+                });
 
-            onSnapshot(collectionGroup(db, 'schedules'), (snap) => {
-                adminCachedSchedules = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
-                updateAdminUI();
-            });
+                onSnapshot(collectionGroup(db, 'schedules'), (snap) => {
+                    adminCachedSchedules = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
+                    updateAdminUI();
+                });
+            }
         }
 
         window.selectAdminTeacher = function(id) {
@@ -331,12 +393,22 @@
         };
 
         window.deleteAdminTeacher = async function(id, name) {
-            try {
-                await deleteDoc(doc(db, 'users', id));
+            if(!confirm(`PERINGATAN: Apakah Anda yakin ingin memusnahkan akun guru "${name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+            
+            if (is_preview) {
+                window.mockData.users = window.mockData.users.filter(u => u.id !== id);
+                adminCachedUsers = window.mockData.users;
                 if(adminSelectedTeacherId === id) adminSelectedTeacherId = null;
-                window.showToast('Akun guru berhasil dimusnahkan dari matriks!', 'success');
-            } catch(err) {
-                window.showToast(err.message, 'error');
+                renderAdminData();
+                window.showToast('Akun guru berhasil dihapus', 'success');
+            } else {
+                try {
+                    if (db) await deleteDoc(doc(db, 'users', id));
+                    if(adminSelectedTeacherId === id) adminSelectedTeacherId = null;
+                    window.showToast('Akun guru berhasil dimusnahkan dari matriks!', 'success');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
             }
         };
 
@@ -356,6 +428,10 @@
 
             const selectedTeacher = teacherList.find(t => t.id === adminSelectedTeacherId);
             const tJournals = adminCachedJournals.filter(j => j.userId === adminSelectedTeacherId);
+            const tSchedules = adminCachedSchedules.filter(s => s.userId === adminSelectedTeacherId);
+
+            const daysIndo = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const currentDayIndo = daysIndo[new Date().getDay()];
 
             const sidebarHTML = `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex-shrink-0 w-full md:w-80 h-fit">
@@ -401,28 +477,32 @@
                             </span>
                         </div>
 
-                        <!-- JADWAL MENGAJAR GURU (VIEW ONLY) -->
-                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
-                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center">
+                        <!-- JADWAL MENGAJAR GURU (VIEW ONLY DENGAN HIGHLIGHT HARI INI) -->
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-3">
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
                                 <i class="fa-solid fa-calendar-check mr-2 text-blue-500"></i> JADWAL MENGAJAR GURU
                             </h3>
                             <div class="space-y-2">
-                                ${(adminCachedSchedules || []).filter(s => s.userId === selectedTeacher.id).length === 0 ? `<p class="text-xs text-slate-500 italic">Belum ada jadwal yang diinput oleh guru ini.</p>` :
-                                  adminCachedSchedules.filter(s => s.userId === selectedTeacher.id).sort((a,b) => {
+                                ${tSchedules.length === 0 ? `<p class="text-xs text-slate-500 italic">Belum ada jadwal yang diinput oleh guru ini.</p>` :
+                                  tSchedules.sort((a,b) => {
                                       const days = { 'Senin':1, 'Selasa':2, 'Rabu':3, 'Kamis':4, 'Jumat':5, 'Sabtu':6, 'Ahad':7 };
                                       if(days[a.hari] !== days[b.hari]) return days[a.hari] - days[b.hari];
-                                      return parseInt(a.jamKe) - parseInt(b.jamKe);
-                                  }).map(s => `
-                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-900 border border-slate-800 px-4 py-3 rounded-lg gap-2">
-                                        <div class="flex items-center gap-3 flex-wrap">
-                                            <span class="text-[10px] font-bold text-blue-400 bg-blue-900/20 px-2 py-1 rounded border border-blue-800/50 uppercase w-16 text-center flex-shrink-0">${s.hari}</span>
-                                            <span class="text-[10px] text-slate-300 font-bold bg-slate-950 px-2 py-1 rounded border border-slate-800">Jam ke-${s.jamKe}</span>
-                                            <span class="text-xs text-slate-300 font-mono bg-slate-950 px-2 py-1 rounded border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1"></i>${s.waktu}</span>
-                                            <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-900/20 px-2 py-1 rounded border border-emerald-800/50 whitespace-nowrap">${s.kelas}</span>
-                                            <span class="text-xs font-bold text-white flex-1 truncate">${s.mapel}</span>
+                                      return parseInt(a.jamKe || 0) - parseInt(b.jamKe || 0);
+                                  }).map(s => {
+                                      const isToday = s.hari.trim().toLowerCase() === currentDayIndo.toLowerCase();
+                                      return `
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 rounded-xl gap-2 transition-all ${isToday ? 'bg-indigo-950/60 border border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40' : 'bg-slate-900 border border-slate-800'}">
+                                            <div class="flex items-center gap-3 flex-wrap">
+                                                <span class="text-[10px] font-bold uppercase px-2 py-1 rounded border whitespace-nowrap ${isToday ? 'text-indigo-200 bg-indigo-500/30 border-indigo-500/50' : 'text-blue-400 bg-blue-900/20 border-blue-800/50'}">${s.hari}</span>
+                                                ${isToday ? '<span class="text-[9px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">✨ Hari Ini</span>' : ''}
+                                                <span class="text-[10px] text-slate-300 font-bold bg-slate-950 px-2 py-1 rounded border border-slate-800">Jam ke-${s.jamKe}</span>
+                                                <span class="text-xs text-slate-300 font-mono bg-slate-950 px-2 py-1 rounded border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1"></i>${s.waktu}</span>
+                                                <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-900/20 px-2 py-1 rounded border border-emerald-800/50 whitespace-nowrap">${s.kelas}</span>
+                                                <span class="text-xs font-bold text-white flex-1 truncate">${s.mapel}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                  `).join('')
+                                      `;
+                                  }).join('')
                                 }
                             </div>
                         </div>
@@ -499,14 +579,26 @@
             const msg = input.value.trim();
             if(!msg) return;
 
-            try {
-                await updateDoc(doc(db, 'users', teacherId, 'journals', journalId), {
-                    adminNotes: msg
-                });
-                input.value = '';
-                window.showToast('Catatan terkirim ke cloud!', 'success');
-            } catch(err) {
-                window.showToast(err.message, 'error');
+            if (is_preview) {
+                const jIdx = window.mockData.journals.findIndex(j => j.id === journalId);
+                if(jIdx > -1) {
+                    window.mockData.journals[jIdx].adminNotes = msg;
+                    input.value = '';
+                    window.showToast('Catatan terkirim!', 'success');
+                    renderAdminData();
+                }
+            } else {
+                try {
+                    if (db) {
+                        await updateDoc(doc(db, 'users', teacherId, 'journals', journalId), {
+                            adminNotes: msg
+                        });
+                    }
+                    input.value = '';
+                    window.showToast('Catatan terkirim ke cloud!', 'success');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
             }
         };
 
@@ -522,12 +614,18 @@
                 adminName: currentUser.name || 'Kepala Madrasah'
             };
 
-            try {
-                await addDoc(collection(db, 'users', teacherId, 'evaluations'), evalObj);
+            if (is_preview) {
+                window.mockData.evaluations.push({ id: 'eval_' + Date.now(), teacherId, ...evalObj });
                 input.value = '';
                 window.showToast('Catatan evaluasi berhasil dikirim ke guru!', 'success');
-            } catch(err) {
-                window.showToast(err.message, 'error');
+            } else {
+                try {
+                    if (db) await addDoc(collection(db, 'users', teacherId, 'evaluations'), evalObj);
+                    input.value = '';
+                    window.showToast('Catatan evaluasi berhasil dikirim ke guru!', 'success');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
             }
         };
 
@@ -578,7 +676,7 @@
 
                     <div id="content-tab-jurnal" class="space-y-6">
                         
-                        <!-- JADWAL MENGAJAR SAYA (GURU INPUT, EDIT & DELETE) -->
+                        <!-- JADWAL MENGAJAR SAYA (GURU INPUT, EDIT & DELETE DENGAN HIGHLIGHT HARI INI) -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <h3 class="text-base font-bold text-white"><i class="fa-solid fa-calendar-days text-indigo-400 mr-2"></i> Jadwal Mengajar Saya</h3>
                             
@@ -594,7 +692,7 @@
                                     <option value="Sabtu">Sabtu</option>
                                     <option value="Ahad">Ahad</option>
                                 </select>
-                                <input type="text" id="sch-jamke" required placeholder="Jam Ke (cth: 1)" class="w-full md:w-28 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
+                                <input type="text" id="sch-jamke" required placeholder="Jam Ke (cth: 1-2)" class="w-full md:w-28 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
                                 <input type="text" id="sch-waktu" required placeholder="Waktu (cth: 08:00 - 09:30)" class="w-full md:w-40 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
                                 <input type="text" id="sch-kelas" required placeholder="Kelas (cth: 7A)" class="w-full md:w-32 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
                                 <input type="text" id="sch-mapel" required placeholder="Mata Pelajaran" class="flex-1 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
@@ -894,16 +992,30 @@
                     userId: currentUser.uid
                 };
 
-                try {
+                if (is_preview) {
                     if (id) {
-                        await setDoc(doc(db, 'users', currentUser.uid, 'journals', id), data);
+                        const idx = window.mockData.journals.findIndex(j => j.id === id);
+                        if (idx !== -1) window.mockData.journals[idx] = { id, ...data };
                     } else {
-                        await addDoc(collection(db, 'users', currentUser.uid, 'journals'), data);
+                        window.mockData.journals.push({ id: 'j_' + Date.now(), ...data });
                     }
                     window.toggleJurnalForm();
-                    window.showToast('Jurnal berhasil disimpan ke Cloud!');
-                } catch (err) {
-                    window.showToast(err.message, 'error');
+                    loadGuruJournals();
+                    window.showToast('Jurnal tersimpan');
+                } else {
+                    try {
+                        if (db) {
+                            if (id) {
+                                await setDoc(doc(db, 'users', currentUser.uid, 'journals', id), data);
+                            } else {
+                                await addDoc(collection(db, 'users', currentUser.uid, 'journals'), data);
+                            }
+                        }
+                        window.toggleJurnalForm();
+                        window.showToast('Jurnal berhasil disimpan ke Cloud!');
+                    } catch (err) {
+                        window.showToast(err.message, 'error');
+                    }
                 }
             }
 
@@ -928,17 +1040,31 @@
 
                 const gradeObj = { kelas, topik, tanggal: new Date().toISOString().split('T')[0], dataSiswa, userId: currentUser.uid };
 
-                try {
+                if (is_preview) {
                     if (id) {
-                        await setDoc(doc(db, 'users', currentUser.uid, 'grades', id), gradeObj);
-                        window.showToast('Rekap nilai berhasil diperbarui!');
+                        const idx = window.mockData.grades.findIndex(g => g.id === id);
+                        if (idx !== -1) window.mockData.grades[idx] = { id, ...gradeObj };
                     } else {
-                        await addDoc(collection(db, 'users', currentUser.uid, 'grades'), gradeObj);
-                        window.showToast('Rekap nilai berhasil disimpan ke Cloud!');
+                        window.mockData.grades.push({ id: 'g_' + Date.now(), ...gradeObj });
                     }
                     window.toggleGradesForm();
-                } catch (err) {
-                    window.showToast(err.message, 'error');
+                    loadGuruGrades();
+                    window.showToast('Rekap tersimpan!');
+                } else {
+                    try {
+                        if (db) {
+                            if (id) {
+                                await setDoc(doc(db, 'users', currentUser.uid, 'grades', id), gradeObj);
+                                window.showToast('Rekap nilai berhasil diperbarui!');
+                            } else {
+                                await addDoc(collection(db, 'users', currentUser.uid, 'grades'), gradeObj);
+                                window.showToast('Rekap nilai berhasil disimpan ke Cloud!');
+                            }
+                        }
+                        window.toggleGradesForm();
+                    } catch (err) {
+                        window.showToast(err.message, 'error');
+                    }
                 }
             }
         });
@@ -958,11 +1084,17 @@
         };
 
         window.deleteJurnal = async function(id) {
-            try {
-                await deleteDoc(doc(db, 'users', currentUser.uid, 'journals', id));
-                window.showToast('Jurnal berhasil dihapus', 'success');
-            } catch (err) {
-                window.showToast(err.message, 'error');
+            if (is_preview) {
+                window.mockData.journals = window.mockData.journals.filter(j => j.id !== id);
+                loadGuruJournals();
+                window.showToast('Jurnal dihapus', 'success');
+            } else {
+                try {
+                    if (db) await deleteDoc(doc(db, 'users', currentUser.uid, 'journals', id));
+                    window.showToast('Jurnal berhasil dihapus', 'success');
+                } catch (err) {
+                    window.showToast(err.message, 'error');
+                }
             }
         };
 
@@ -1036,22 +1168,34 @@
         };
 
         function loadGuruJournals() {
-            onSnapshot(collection(db, 'users', currentUser.uid, 'journals'), (snapshot) => {
-                cachedJournals = [];
-                snapshot.forEach(doc => cachedJournals.push({ id: doc.id, ...doc.data() }));
+            if (is_preview) {
+                cachedJournals = window.mockData.journals.filter(j => j.userId === currentUser.uid);
                 renderJournalsUI(cachedJournals);
-            }, (err) => { console.error(err); });
+            } else {
+                if (!db) return;
+                onSnapshot(collection(db, 'users', currentUser.uid, 'journals'), (snapshot) => {
+                    cachedJournals = [];
+                    snapshot.forEach(doc => cachedJournals.push({ id: doc.id, ...doc.data() }));
+                    renderJournalsUI(cachedJournals);
+                }, (err) => { console.error(err); });
+            }
         }
 
         function loadGuruEvaluations() {
             const c = document.getElementById('guru-eval-list');
             if(!c) return;
             
-            onSnapshot(collection(db, 'users', currentUser.uid, 'evaluations'), (snapshot) => {
-                const evals = [];
-                snapshot.forEach(doc => evals.push({ id: doc.id, ...doc.data() }));
+            if(is_preview) {
+                const evals = window.mockData.evaluations.filter(e => e.teacherId === currentUser.uid);
                 renderEvaluationsUI(evals);
-            }, (err) => { console.error(err); });
+            } else {
+                if (!db) return;
+                onSnapshot(collection(db, 'users', currentUser.uid, 'evaluations'), (snapshot) => {
+                    const evals = [];
+                    snapshot.forEach(doc => evals.push({ id: doc.id, ...doc.data() }));
+                    renderEvaluationsUI(evals);
+                }, (err) => { console.error(err); });
+            }
         }
 
         function renderEvaluationsUI(evals) {
@@ -1111,11 +1255,17 @@
         }
 
         function loadGuruSchedules() {
-            onSnapshot(collection(db, 'users', currentUser.uid, 'schedules'), (snapshot) => {
-                const schedules = [];
-                snapshot.forEach(doc => schedules.push({ id: doc.id, ...doc.data() }));
-                renderGuruSchedulesUI(schedules);
-            }, (err) => { console.error(err); });
+            if (is_preview) {
+                cachedSchedules = window.mockData.schedules.filter(s => s.userId === currentUser.uid);
+                renderGuruSchedulesUI(cachedSchedules);
+            } else {
+                if (!db) return;
+                onSnapshot(collection(db, 'users', currentUser.uid, 'schedules'), (snapshot) => {
+                    cachedSchedules = [];
+                    snapshot.forEach(doc => cachedSchedules.push({ id: doc.id, ...doc.data() }));
+                    renderGuruSchedulesUI(cachedSchedules);
+                }, (err) => { console.error(err); });
+            }
         }
 
         function renderGuruSchedulesUI(schedules) {
@@ -1125,25 +1275,33 @@
                 container.innerHTML = `<p class="text-xs text-slate-500 italic mt-3">Belum ada jadwal mengajar yang ditambahkan.</p>`;
                 return;
             }
+
+            const daysIndo = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const currentDayIndo = daysIndo[new Date().getDay()];
+
             container.innerHTML = schedules.sort((a,b) => {
                 const days = { 'Senin':1, 'Selasa':2, 'Rabu':3, 'Kamis':4, 'Jumat':5, 'Sabtu':6, 'Ahad':7 };
                 if(days[a.hari] !== days[b.hari]) return days[a.hari] - days[b.hari];
-                return parseInt(a.jamKe) - parseInt(b.jamKe);
-            }).map(s => `
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-950 border border-slate-800 px-4 py-3 rounded-xl gap-3 hover:border-slate-700 transition-colors">
-                    <div class="flex items-center gap-3 flex-wrap">
-                        <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/25 uppercase w-20 text-center flex-shrink-0">${s.hari}</span>
-                        <span class="text-[10px] text-slate-300 font-bold bg-slate-900 px-2 py-1 rounded-lg border border-slate-800">Jam ke-${s.jamKe}</span>
-                        <span class="text-xs text-slate-300 font-mono bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1.5"></i>${s.waktu}</span>
-                        <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/25 whitespace-nowrap">${s.kelas}</span>
-                        <span class="text-xs font-bold text-white flex-1 truncate">${s.mapel}</span>
+                return parseInt(a.jamKe || 0) - parseInt(b.jamKe || 0);
+            }).map(s => {
+                const isToday = s.hari.trim().toLowerCase() === currentDayIndo.toLowerCase();
+                return `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 rounded-xl gap-3 transition-all ${isToday ? 'bg-indigo-950/60 border border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40' : 'bg-slate-950 border border-slate-800'}">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <span class="text-[10px] font-bold uppercase px-3 py-1 rounded-lg border w-20 text-center flex-shrink-0 ${isToday ? 'text-indigo-200 bg-indigo-500/30 border-indigo-500/50' : 'text-indigo-400 bg-indigo-500/10 border-indigo-500/25'}">${s.hari}</span>
+                            ${isToday ? '<span class="text-[9px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">✨ Hari Ini</span>' : ''}
+                            <span class="text-[10px] text-slate-300 font-bold bg-slate-900 px-2 py-1 rounded-lg border border-slate-800">Jam ke-${s.jamKe}</span>
+                            <span class="text-xs text-slate-300 font-mono bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1.5"></i>${s.waktu}</span>
+                            <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/25 whitespace-nowrap">${s.kelas}</span>
+                            <span class="text-xs font-bold text-white flex-1 truncate">${s.mapel}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="window.editGuruSchedule('${s.id}', '${s.hari}', '${s.jamKe}', '${s.waktu}', '${s.kelas}', '${s.mapel.replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300 p-1.5 transition" title="Edit Jadwal"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="window.deleteGuruSchedule('${s.id}')" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Hapus Jadwal"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="window.editGuruSchedule('${s.id}', '${s.hari}', '${s.jamKe}', '${s.waktu}', '${s.kelas}', '${s.mapel.replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300 p-1.5 transition" title="Edit Jadwal"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="window.deleteGuruSchedule('${s.id}')" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Hapus Jadwal"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         window.addGuruSchedule = async function(e) {
@@ -1158,17 +1316,31 @@
                 userId: currentUser.uid
             };
             
-            try {
+            if (is_preview) {
                 if(editId) {
-                    await updateDoc(doc(db, 'users', currentUser.uid, 'schedules', editId), data);
-                    window.showToast('Jadwal berhasil diperbarui di Cloud!', 'success');
+                    const idx = window.mockData.schedules.findIndex(s => s.id === editId);
+                    if(idx > -1) window.mockData.schedules[idx] = { id: editId, ...data };
                 } else {
-                    await addDoc(collection(db, 'users', currentUser.uid, 'schedules'), data);
-                    window.showToast('Jadwal berhasil ditambahkan ke Cloud!', 'success');
+                    window.mockData.schedules.push({ id: 'sch_' + Date.now(), ...data });
                 }
+                loadGuruSchedules();
                 resetSchForm(e.target);
-            } catch(err) {
-                window.showToast(err.message, 'error');
+                window.showToast('Jadwal tersimpan!', 'success');
+            } else {
+                try {
+                    if (db) {
+                        if(editId) {
+                            await updateDoc(doc(db, 'users', currentUser.uid, 'schedules', editId), data);
+                            window.showToast('Jadwal berhasil diperbarui di Cloud!', 'success');
+                        } else {
+                            await addDoc(collection(db, 'users', currentUser.uid, 'schedules'), data);
+                            window.showToast('Jadwal berhasil ditambahkan ke Cloud!', 'success');
+                        }
+                    }
+                    resetSchForm(e.target);
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
             }
         };
 
@@ -1192,11 +1364,17 @@
         };
 
         window.deleteGuruSchedule = async function(scheduleId) {
-            try {
-                await deleteDoc(doc(db, 'users', currentUser.uid, 'schedules', scheduleId));
+            if (is_preview) {
+                window.mockData.schedules = window.mockData.schedules.filter(s => s.id !== scheduleId);
+                loadGuruSchedules();
                 window.showToast('Jadwal berhasil dihapus', 'success');
-            } catch(err) {
-                window.showToast(err.message, 'error');
+            } else {
+                try {
+                    if (db) await deleteDoc(doc(db, 'users', currentUser.uid, 'schedules', scheduleId));
+                    window.showToast('Jadwal berhasil dihapus', 'success');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
             }
         };
 
@@ -1241,21 +1419,34 @@
         };
 
         window.deleteGrade = async function(id) {
-            try {
-                await deleteDoc(doc(db, 'users', currentUser.uid, 'grades', id));
-                window.showToast('Rekap berhasil dihapus', 'success');
-            } catch (err) {
-                window.showToast(err.message, 'error');
+            if (is_preview) {
+                window.mockData.grades = window.mockData.grades.filter(g => g.id !== id);
+                loadGuruGrades();
+                window.showToast('Rekap dihapus', 'success');
+            } else {
+                try {
+                    if (db) await deleteDoc(doc(db, 'users', currentUser.uid, 'grades', id));
+                    window.showToast('Rekap berhasil dihapus', 'success');
+                } catch (err) {
+                    window.showToast(err.message, 'error');
+                }
             }
         };
 
         function loadGuruGrades() {
-            onSnapshot(collection(db, 'users', currentUser.uid, 'grades'), (snapshot) => {
-                cachedGrades = [];
-                snapshot.forEach(doc => cachedGrades.push({ id: doc.id, ...doc.data() }));
+            if (is_preview) {
+                cachedGrades = window.mockData.grades.filter(g => g.userId === currentUser.uid);
                 renderGradesUI(cachedGrades);
                 populateMatrixDropdown(cachedGrades);
-            }, (err) => { console.error(err); });
+            } else {
+                if (!db) return;
+                onSnapshot(collection(db, 'users', currentUser.uid, 'grades'), (snapshot) => {
+                    cachedGrades = [];
+                    snapshot.forEach(doc => cachedGrades.push({ id: doc.id, ...doc.data() }));
+                    renderGradesUI(cachedGrades);
+                    populateMatrixDropdown(cachedGrades);
+                }, (err) => { console.error(err); });
+            }
         }
 
         function renderGradesUI(grades) {
@@ -1462,23 +1653,36 @@
         };
 
         window.deleteGraderExam = async function(id) {
-            try {
-                await deleteDoc(doc(db, 'exams', id));
-                window.showToast('Instrumen ujian berhasil dihapus', 'success');
-            } catch(err) {
-                window.showToast(err.message, 'error');
+            if(!confirm('PERINGATAN: Yakin ingin menghapus kunci ujian ini? Data tidak bisa dikembalikan.')) return;
+            if(is_preview) {
+                window.mockData.exams = window.mockData.exams.filter(e => e.id !== id);
+                loadGraderExamsData();
+                window.showToast('Instrumen ujian dihapus', 'success');
+            } else {
+                try {
+                    if (db) await deleteDoc(doc(db, 'exams', id));
+                    window.showToast('Instrumen ujian berhasil dihapus', 'success');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
             }
         };
 
         function loadGraderExamsData() {
-            const qRef = query(collection(db, 'exams'), where('userId', '==', currentUser.uid));
-            onSnapshot(qRef, (snapshot) => {
-                graderExams = [];
-                snapshot.forEach(doc => graderExams.push({ id: doc.id, ...doc.data() }));
-                if(document.getElementById('g-view-dashboard') && !document.getElementById('g-view-dashboard').classList.contains('hidden')) {
-                    renderGraderDash();
-                }
-            }, (err) => { console.error(err); });
+            if (is_preview) {
+                graderExams = window.mockData.exams.filter(e => e.userId === currentUser.uid);
+                renderGraderDash();
+            } else {
+                if (!db) return;
+                const qRef = query(collection(db, 'exams'), where('userId', '==', currentUser.uid));
+                onSnapshot(qRef, (snapshot) => {
+                    graderExams = [];
+                    snapshot.forEach(doc => graderExams.push({ id: doc.id, ...doc.data() }));
+                    if(document.getElementById('g-view-dashboard') && !document.getElementById('g-view-dashboard').classList.contains('hidden')) {
+                        renderGraderDash();
+                    }
+                }, (err) => { console.error(err); });
+            }
         }
 
         function renderGraderDash() {
@@ -1681,17 +1885,31 @@
                 questions: editorQuestions,
                 userId: currentUser ? currentUser.uid : 'mock-guru'
             };
-            try {
+            if(is_preview) {
                 if(currentExamId) {
-                    await setDoc(doc(db, 'exams', currentExamId), data);
+                    const idx = window.mockData.exams.findIndex(x => x.id === currentExamId);
+                    if(idx > -1) window.mockData.exams[idx] = {id: currentExamId, ...data};
                 } else {
-                    await addDoc(collection(db, 'exams'), data);
+                    window.mockData.exams.push({id: 'e_'+Date.now(), ...data});
                 }
-                window.showToast('Kunci jawaban berhasil disimpan ke Cloud!');
+                window.showToast('Instrumen tersimpan.');
                 window.navGrader('dashboard');
                 currentExamId = null;
-            } catch(err) {
-                window.showToast(err.message, 'error');
+            } else {
+                try {
+                    if (db) {
+                        if(currentExamId) {
+                            await setDoc(doc(db, 'exams', currentExamId), data);
+                        } else {
+                            await addDoc(collection(db, 'exams'), data);
+                        }
+                    }
+                    window.showToast('Kunci jawaban berhasil disimpan ke Cloud!');
+                    window.navGrader('dashboard');
+                    currentExamId = null;
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
             }
         };
 
@@ -1816,18 +2034,15 @@
             const syncTopik = e.topic ? `Ujian: ${e.title} (${e.topic})` : `Ujian: ${e.title}`;
             const syncKelas = e.className || 'Tanpa Kelas';
 
-            try {
-                const qRef = query(collection(db, 'users', currentUser.uid, 'grades'), where('topik', '==', syncTopik), where('kelas', '==', syncKelas));
-                const snap = await getDocs(qRef);
-                if (!snap.empty) {
-                    const docTarget = snap.docs[0];
-                    let dataSiswa = docTarget.data().dataSiswa || [];
-                    let sIdx = dataSiswa.findIndex(s => s.nama === stuName);
-                    if(sIdx > -1) dataSiswa[sIdx].nilai = final;
-                    else dataSiswa.push({nama: stuName, nilai: final});
-                    await updateDoc(doc(db, 'users', currentUser.uid, 'grades', docTarget.id), { dataSiswa });
+            if (is_preview) {
+                const existingGrade = window.mockData.grades.find(g => g.topik === syncTopik && g.kelas === syncKelas && g.userId === currentUser.uid);
+                if (existingGrade) {
+                    const sIdx = existingGrade.dataSiswa.findIndex(s => s.nama === stuName);
+                    if (sIdx > -1) existingGrade.dataSiswa[sIdx].nilai = final;
+                    else existingGrade.dataSiswa.push({ nama: stuName, nilai: final });
                 } else {
-                    await addDoc(collection(db, 'users', currentUser.uid, 'grades'), {
+                    window.mockData.grades.push({
+                        id: 'g_' + Date.now(),
                         kelas: syncKelas,
                         topik: syncTopik,
                         tanggal: dateStr,
@@ -1835,8 +2050,32 @@
                         userId: currentUser.uid
                     });
                 }
-            } catch(err) {
-                console.error("Auto-sync error:", err);
+                loadGuruGrades();
+            } else {
+                try {
+                    if (db) {
+                        const qRef = query(collection(db, 'users', currentUser.uid, 'grades'), where('topik', '==', syncTopik), where('kelas', '==', syncKelas));
+                        const snap = await getDocs(qRef);
+                        if (!snap.empty) {
+                            const docTarget = snap.docs[0];
+                            let dataSiswa = docTarget.data().dataSiswa || [];
+                            let sIdx = dataSiswa.findIndex(s => s.nama === stuName);
+                            if(sIdx > -1) dataSiswa[sIdx].nilai = final;
+                            else dataSiswa.push({nama: stuName, nilai: final});
+                            await updateDoc(doc(db, 'users', currentUser.uid, 'grades', docTarget.id), { dataSiswa });
+                        } else {
+                            await addDoc(collection(db, 'users', currentUser.uid, 'grades'), {
+                                kelas: syncKelas,
+                                topik: syncTopik,
+                                tanggal: dateStr,
+                                dataSiswa: [{ nama: stuName, nilai: final }],
+                                userId: currentUser.uid
+                            });
+                        }
+                    }
+                } catch(err) {
+                    console.error("Auto-sync error:", err);
+                }
             }
 
             document.getElementById('grader-result-modal').classList.remove('hidden');
