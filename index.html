@@ -346,9 +346,11 @@
                                 </div>
                             </div>
                             <div class="flex items-center space-x-3">
+                                ${is_preview ? `
                                 <button onclick="window.toggleRoleSimulation()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg font-bold transition">
                                     Ganti Role (${userRole === 'admin' ? 'Guru' : 'Admin'})
                                 </button>
+                                ` : ''}
                                 <button onclick="window.toggleTheme()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition border border-slate-700" title="Ganti Tema">
                                     <i id="theme-icon" class="fa-solid ${localStorage.getItem('theme') === 'light' ? 'fa-moon text-slate-300' : 'fa-sun text-amber-400'} text-sm"></i>
                                 </button>
@@ -790,10 +792,10 @@
             } else {
                 try {
                     if (db && currentUser) {
-                        await updateDoc(doc(db, 'users', currentUser.uid, 'journals', journalId), {
+                        await setDoc(doc(db, 'users', currentUser.uid, 'journals', journalId), {
                             adminNotesReaction: emoji,
                             adminNotesReadAt: readTime
-                        });
+                        }, { merge: true });
                         window.showToast(`Reaksi ${emoji} terkirim!`, 'success');
                     }
                 } catch(err) {
@@ -849,11 +851,11 @@
             } else {
                 try {
                     if (db && currentUser) {
-                        await updateDoc(doc(db, 'users', currentUser.uid, 'evaluations', evalId), {
+                        await setDoc(doc(db, 'users', currentUser.uid, 'evaluations', evalId), {
                             reaction: emoji,
                             isRead: true,
                             readAt: readTime
-                        });
+                        }, { merge: true });
                         window.showToast(`Reaksi ${emoji} terkirim!`, 'success');
                     }
                 } catch(err) {
@@ -881,11 +883,11 @@
             } else {
                 try {
                     if (db && currentUser) {
-                        await updateDoc(doc(db, 'users', currentUser.uid, 'evaluations', evalId), {
+                        await setDoc(doc(db, 'users', currentUser.uid, 'evaluations', evalId), {
                             reply: text,
                             isRead: true,
                             readAt: readTime
-                        });
+                        }, { merge: true });
                         window.showToast('Balasan evaluasi terkirim ke Admin!', 'success');
                     }
                 } catch(err) {
