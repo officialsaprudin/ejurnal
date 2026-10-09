@@ -76,7 +76,19 @@
                 { id: 'sch_1', userId: 'mock-guru-id', hari: 'Senin', jamKe: '1', waktu: '08:00 - 09:30', kelas: 'Kelas 5', mapel: 'Al-Qur\'an Hadis' },
                 { id: 'sch_2', userId: 'mock-guru-id', hari: 'Jumat', jamKe: '2', waktu: '09:00 - 10:30', kelas: 'Kelas 7A', mapel: 'Fiqih' }
             ],
-            evaluations: []
+            evaluations: [
+                {
+                    id: 'eval_mock_1',
+                    teacherId: 'mock-guru-id',
+                    adminName: 'admin',
+                    date: '2026-09-29',
+                    message: "Sering-sering berdoa agar dimudahkan dalam menyampaikan materi dengan baik, dan doakan para thullab agar mudah menyerap materi yang disampaikan. Secara umum kendala dan tindakan sudah relevan dan sesuai, tinggal selaraskan dengan praktek pembelajaran di kelas saja, dan jangan pernah bosan untuk terus berdo'a dan istighfar, karena terkadang thullab sholih yang spesial dan butuh perhatian lebih itu Allah hadirkan dalam hidup kita sebagai ujian, harapannya menjadi penggugur dosa dan ganjaran dari bersabarnya kita dilipat gandakan oleh Allah Subhanahu wa Ta'ala. Untuk kendala PJJ, sangat dimaklumi, semoga asap di tanah kalimantan segera berakhir.",
+                    isRead: false,
+                    reaction: '',
+                    reply: '',
+                    readAt: ''
+                }
+            ]
         };
 
         const firebaseConfig = {
@@ -125,6 +137,7 @@
         let adminCachedJournals = [];
         let adminCachedGrades = [];
         let adminCachedSchedules = [];
+        let adminCachedEvaluations = [];
 
         const root = document.getElementById('app');
 
@@ -380,6 +393,27 @@
             }
         };
 
+        window.switchTab = function(tab) {
+            currentTab = tab;
+            localStorage.setItem('omni_tab', tab);
+            const tabs = ['jurnal', 'nilai', 'grader', 'evaluasi'];
+            tabs.forEach(t => {
+                const content = document.getElementById(`content-tab-${t}`);
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (content) {
+                    if (t === tab) content.classList.remove('hidden');
+                    else content.classList.add('hidden');
+                }
+                if (btn) {
+                    if (t === tab) {
+                        btn.className = "px-4 py-2 rounded-xl text-xs font-semibold transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20 whitespace-nowrap";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-xl text-xs font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap";
+                    }
+                }
+            });
+        };
+
         function initAdminLogic() {
             const container = document.getElementById('admin-teacher-list');
             if(!container) return;
@@ -389,6 +423,7 @@
                 adminCachedJournals = window.mockData.journals;
                 adminCachedGrades = window.mockData.grades;
                 adminCachedSchedules = window.mockData.schedules;
+                adminCachedEvaluations = window.mockData.evaluations || [];
                 renderAdminData();
             } else {
                 if (!db) return;
@@ -411,6 +446,11 @@
 
                 onSnapshot(collectionGroup(db, 'schedules'), (snap) => {
                     adminCachedSchedules = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
+                    updateAdminUI();
+                });
+
+                onSnapshot(collectionGroup(db, 'evaluations'), (snap) => {
+                    adminCachedEvaluations = snap.docs.map(doc => ({ id: doc.id, teacherId: doc.ref.parent.parent.id, ...doc.data() }));
                     updateAdminUI();
                 });
             }
@@ -573,8 +613,8 @@
                         </div>
 
                         <!-- EVALUASI DARI KEPALA MADRASAH -->
-                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
-                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center">
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 relative overflow-hidden space-y-4">
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
                                 <i class="fa-solid fa-paper-plane mr-2 text-blue-500"></i> KIRIM CATATAN EVALUASI
                             </h3>
                             <form onsubmit="window.sendAdminEvaluation(event, '${selectedTeacher.id}')" class="space-y-3">
@@ -583,6 +623,40 @@
                                     Kirim Evaluasi
                                 </button>
                             </form>
+
+                            <!-- DAFTAR CATATAN EVALUASI & STATUS RESPON GURU -->
+                            <div class="pt-3 border-t border-slate-800 space-y-2">
+                                <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                                    <i class="fa-solid fa-clock-rotate-left mr-1.5 text-blue-400"></i> Riwayat Arahan & Konfirmasi Dibaca Guru
+                                </h4>
+                                ${(() => {
+                                    const teacherEvals = adminCachedEvaluations.filter(e => e.teacherId === selectedTeacher.id);
+                                    if (teacherEvals.length === 0) return `<p class="text-xs text-slate-500 italic py-1">Belum ada evaluasi yang dikirimkan ke guru ini.</p>`;
+                                    return teacherEvals.map(ev => `
+                                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs space-y-2">
+                                            <div class="flex justify-between items-center text-slate-400">
+                                                <span class="font-semibold text-slate-300">${ev.date}</span>
+                                                ${ev.isRead || ev.reaction || ev.reply ? `
+                                                    <span class="bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1">
+                                                        <i class="fa-solid fa-check-double text-[9px]"></i> Sudah Dibaca ${ev.reaction ? `<span class="text-xs ml-0.5">${ev.reaction}</span>` : ''}
+                                                    </span>
+                                                ` : `
+                                                    <span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1">
+                                                        <i class="fa-regular fa-clock text-[9px]"></i> Menunggu dibaca guru
+                                                    </span>
+                                                `}
+                                            </div>
+                                            <p class="text-slate-200">${ev.message}</p>
+                                            ${ev.reply ? `
+                                                <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 text-[11px] text-blue-300">
+                                                    <span class="font-bold text-blue-400 block mb-0.5"><i class="fa-solid fa-reply mr-1"></i> Balasan Guru (${ev.readAt || ''}):</span>
+                                                    "${ev.reply}"
+                                                </div>
+                                            ` : (ev.readAt ? `<p class="text-[10px] text-slate-500 italic">Dikonfirmasi dibaca pada: ${ev.readAt}</p>` : '')}
+                                        </div>
+                                    `).join('');
+                                })()}
+                            </div>
                         </div>
 
                         <!-- RIWAYAT JURNAL LENGKAP -->
@@ -638,9 +712,22 @@
                                                     </button>
                                                 </form>
                                                 ${j.adminNotes ? `
-                                                    <div class="mt-3 bg-blue-900/10 border border-blue-900/30 p-3 rounded-lg">
-                                                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Catatan Admin</span>
-                                                        <p class="text-xs text-blue-100">${j.adminNotes}</p>
+                                                    <div class="mt-3 bg-blue-900/10 border border-blue-900/30 p-3.5 rounded-xl space-y-1.5">
+                                                        <div class="flex justify-between items-center">
+                                                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1">
+                                                                <i class="fa-solid fa-note-sticky text-blue-400"></i> Catatan Admin
+                                                            </span>
+                                                            ${j.adminNotesReaction ? `
+                                                                <span class="bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1">
+                                                                    <i class="fa-solid fa-check-double text-[9px]"></i> Sudah Dibaca Guru <span class="text-xs ml-0.5">${j.adminNotesReaction}</span> ${j.adminNotesReadAt ? `<span class="text-[9px] text-slate-400 font-normal">(${j.adminNotesReadAt})</span>` : ''}
+                                                                </span>
+                                                            ` : `
+                                                                <span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1">
+                                                                    <i class="fa-regular fa-clock text-[9px]"></i> Menunggu respon guru
+                                                                </span>
+                                                            `}
+                                                        </div>
+                                                        <p class="text-xs text-blue-100 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80 italic">"${j.adminNotes}"</p>
                                                     </div>
                                                 ` : ''}
                                             </div>
@@ -690,6 +777,31 @@
             }
         };
 
+        window.sendJournalReaction = async function(journalId, emoji) {
+            const readTime = new Date().toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            if (is_preview) {
+                const item = window.mockData.journals.find(j => j.id === journalId);
+                if (item) {
+                    item.adminNotesReaction = emoji;
+                    item.adminNotesReadAt = readTime;
+                    loadGuruJournals();
+                    window.showToast(`Reaksi ${emoji} terkirim! Admin dapat melihat tanda sudah dibaca.`, 'success');
+                }
+            } else {
+                try {
+                    if (db && currentUser) {
+                        await updateDoc(doc(db, 'users', currentUser.uid, 'journals', journalId), {
+                            adminNotesReaction: emoji,
+                            adminNotesReadAt: readTime
+                        });
+                        window.showToast(`Reaksi ${emoji} terkirim!`, 'success');
+                    }
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
         window.sendAdminEvaluation = async function(e, teacherId) {
             e.preventDefault();
             const input = document.getElementById(`eval-msg-${teacherId}`);
@@ -699,18 +811,83 @@
             const evalObj = {
                 message: msg,
                 date: new Date().toISOString().split('T')[0],
-                adminName: currentUser.name || 'Kepala Madrasah'
+                adminName: currentUser.name || 'Kepala Madrasah',
+                isRead: false,
+                reaction: '',
+                reply: '',
+                readAt: ''
             };
 
             if (is_preview) {
                 window.mockData.evaluations.push({ id: 'eval_' + Date.now(), teacherId, ...evalObj });
+                adminCachedEvaluations = window.mockData.evaluations;
                 input.value = '';
                 window.showToast('Catatan evaluasi berhasil dikirim ke guru!', 'success');
+                renderAdminData();
             } else {
                 try {
                     if (db) await addDoc(collection(db, 'users', teacherId, 'evaluations'), evalObj);
                     input.value = '';
                     window.showToast('Catatan evaluasi berhasil dikirim ke guru!', 'success');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
+        window.sendGuruReaction = async function(evalId, emoji) {
+            const readTime = new Date().toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            if (is_preview) {
+                const item = window.mockData.evaluations.find(e => e.id === evalId);
+                if (item) {
+                    item.reaction = emoji;
+                    item.isRead = true;
+                    item.readAt = readTime;
+                    loadGuruEvaluations();
+                    window.showToast(`Reaksi ${emoji} terkirim! Admin dapat melihat tanda dibaca.`, 'success');
+                }
+            } else {
+                try {
+                    if (db && currentUser) {
+                        await updateDoc(doc(db, 'users', currentUser.uid, 'evaluations', evalId), {
+                            reaction: emoji,
+                            isRead: true,
+                            readAt: readTime
+                        });
+                        window.showToast(`Reaksi ${emoji} terkirim!`, 'success');
+                    }
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
+        window.sendGuruEvalReply = async function(e, evalId) {
+            e.preventDefault();
+            const input = document.getElementById(`eval-reply-${evalId}`);
+            const text = input ? input.value.trim() : '';
+            if (!text) return window.showToast('Tuliskan teks balasan terlebih dahulu', 'error');
+            const readTime = new Date().toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            if (is_preview) {
+                const item = window.mockData.evaluations.find(e => e.id === evalId);
+                if (item) {
+                    item.reply = text;
+                    item.isRead = true;
+                    item.readAt = readTime;
+                    loadGuruEvaluations();
+                    window.showToast('Balasan evaluasi terkirim ke Admin!', 'success');
+                }
+            } else {
+                try {
+                    if (db && currentUser) {
+                        await updateDoc(doc(db, 'users', currentUser.uid, 'evaluations', evalId), {
+                            reply: text,
+                            isRead: true,
+                            readAt: readTime
+                        });
+                        window.showToast('Balasan evaluasi terkirim ke Admin!', 'success');
+                    }
                 } catch(err) {
                     window.showToast(err.message, 'error');
                 }
@@ -744,6 +921,487 @@
             loadGuruEvaluations();
         }
 
+        function loadGuruSchedules() {
+            if (is_preview) {
+                cachedSchedules = window.mockData.schedules.filter(s => s.userId === currentUser.uid);
+                renderGuruSchedulesUI(cachedSchedules);
+            } else {
+                if (!db || !currentUser) return;
+                onSnapshot(collection(db, 'users', currentUser.uid, 'schedules'), (snapshot) => {
+                    cachedSchedules = [];
+                    snapshot.forEach(doc => cachedSchedules.push({ id: doc.id, ...doc.data() }));
+                    renderGuruSchedulesUI(cachedSchedules);
+                }, (err) => { console.error(err); });
+            }
+        }
+
+        function renderGuruSchedulesUI(schedules) {
+            const container = document.getElementById('guru-schedule-list');
+            if (!container) return;
+            if (schedules.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic py-2">Belum ada jadwal mengajar yang diinput.</p>`;
+                return;
+            }
+            const daysIndo = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const currentDayIndo = daysIndo[new Date().getDay()];
+            const daysOrder = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6, 'Ahad': 7 };
+
+            const sorted = [...schedules].sort((a, b) => {
+                if (daysOrder[a.hari] !== daysOrder[b.hari]) return (daysOrder[a.hari] || 99) - (daysOrder[b.hari] || 99);
+                return parseInt(a.jamKe || 0) - parseInt(b.jamKe || 0);
+            });
+
+            container.innerHTML = sorted.map(s => {
+                const isToday = (s.hari || '').trim().toLowerCase() === currentDayIndo.toLowerCase();
+                const safeHari = (s.hari || '').replace(/'/g, "\\'");
+                const safeJamKe = (s.jamKe || '').replace(/'/g, "\\'");
+                const safeWaktu = (s.waktu || '').replace(/'/g, "\\'");
+                const safeKelas = (s.kelas || '').replace(/'/g, "\\'");
+                const safeMapel = (s.mapel || '').replace(/'/g, "\\'");
+
+                return `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 rounded-xl gap-2 transition-all ${isToday ? 'bg-indigo-950/60 border border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40' : 'bg-slate-950 border border-slate-800'}">
+                        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                            <span class="text-[10px] font-bold uppercase px-2 py-1 rounded border whitespace-nowrap ${isToday ? 'text-indigo-200 bg-indigo-500/30 border-indigo-500/50' : 'text-blue-400 bg-blue-900/20 border-blue-800/50'}">${s.hari}</span>
+                            ${isToday ? '<span class="text-[9px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">✨ Hari Ini</span>' : ''}
+                            <span class="text-[10px] text-slate-300 font-bold bg-slate-900 px-2 py-1 rounded border border-slate-800">Jam ke-${s.jamKe}</span>
+                            <span class="text-xs text-slate-300 font-mono bg-slate-900 px-2 py-1 rounded border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1"></i>${s.waktu}</span>
+                            <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-900/20 px-2 py-1 rounded border border-emerald-800/50 whitespace-nowrap">${s.kelas}</span>
+                            <span class="text-xs font-bold text-white flex-1">${s.mapel}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 self-end sm:self-center">
+                            <button onclick="window.editGuruSchedule('${s.id}', '${safeHari}', '${safeJamKe}', '${safeWaktu}', '${safeKelas}', '${safeMapel}')" class="text-indigo-400 hover:text-indigo-300 p-1.5 transition" title="Edit Jadwal">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="window.deleteGuruSchedule('${s.id}')" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Hapus Jadwal">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.cancelEditSchedule = function() {
+            document.getElementById('edit-sch-id').value = '';
+            document.getElementById('sch-hari').value = '';
+            document.getElementById('sch-jamke').value = '';
+            document.getElementById('sch-waktu').value = '';
+            document.getElementById('sch-kelas').value = '';
+            document.getElementById('sch-mapel').value = '';
+            const btn = document.getElementById('btn-submit-sch');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-plus text-xs mr-1"></i> Tambah';
+            const btnCancel = document.getElementById('btn-cancel-sch');
+            if (btnCancel) btnCancel.classList.add('hidden');
+        };
+
+        window.addGuruSchedule = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-sch-id').value;
+            const data = {
+                hari: document.getElementById('sch-hari').value,
+                jamKe: document.getElementById('sch-jamke').value,
+                waktu: document.getElementById('sch-waktu').value,
+                kelas: document.getElementById('sch-kelas').value,
+                mapel: document.getElementById('sch-mapel').value,
+                userId: currentUser ? currentUser.uid : 'mock-guru-id'
+            };
+
+            const resetForm = () => {
+                window.cancelEditSchedule();
+            };
+
+            if (is_preview) {
+                if (id) {
+                    const idx = window.mockData.schedules.findIndex(s => s.id === id);
+                    if (idx > -1) window.mockData.schedules[idx] = { id, ...data };
+                } else {
+                    window.mockData.schedules.push({ id: 'sch_' + Date.now(), ...data });
+                }
+                resetForm();
+                loadGuruSchedules();
+                window.showToast('Jadwal berhasil disimpan!');
+            } else {
+                try {
+                    if (db && currentUser) {
+                        if (id) {
+                            await setDoc(doc(db, 'users', currentUser.uid, 'schedules', id), data);
+                        } else {
+                            await addDoc(collection(db, 'users', currentUser.uid, 'schedules'), data);
+                        }
+                    }
+                    resetForm();
+                    window.showToast('Jadwal berhasil disimpan ke Cloud!');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
+        window.editGuruSchedule = function(id, hari, jamKe, waktu, kelas, mapel) {
+            document.getElementById('edit-sch-id').value = id;
+            document.getElementById('sch-hari').value = hari || '';
+            document.getElementById('sch-jamke').value = jamKe || '';
+            document.getElementById('sch-waktu').value = waktu || '';
+            document.getElementById('sch-kelas').value = kelas || '';
+            document.getElementById('sch-mapel').value = mapel || '';
+            const btn = document.getElementById('btn-submit-sch');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs mr-1"></i> Simpan';
+            const btnCancel = document.getElementById('btn-cancel-sch');
+            if (btnCancel) btnCancel.classList.remove('hidden');
+            window.scrollTo({ top: document.getElementById('sch-hari').offsetTop - 80, behavior: 'smooth' });
+        };
+
+        function loadGuruGrades() {
+            if (is_preview) {
+                cachedGrades = window.mockData.grades.filter(g => g.userId === currentUser.uid);
+                renderGradesUI(cachedGrades);
+                updateMatrixClassOptions();
+            } else {
+                if (!db || !currentUser) return;
+                onSnapshot(collection(db, 'users', currentUser.uid, 'grades'), (snapshot) => {
+                    cachedGrades = [];
+                    snapshot.forEach(doc => cachedGrades.push({ id: doc.id, ...doc.data() }));
+                    renderGradesUI(cachedGrades);
+                    updateMatrixClassOptions();
+                }, (err) => { console.error(err); });
+            }
+        }
+
+        function renderGradesUI(grades) {
+            const container = document.getElementById('guru-grades-grid');
+            if (!container) return;
+            if (grades.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic py-2">Belum ada rekap nilai yang diinput.</p>`;
+                return;
+            }
+            container.innerHTML = grades.map(g => {
+                const count = (g.dataSiswa || []).length;
+                const avg = count > 0 ? (g.dataSiswa.reduce((sum, s) => sum + (parseFloat(s.nilai) || 0), 0) / count).toFixed(1) : 0;
+                return `
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-[10px] font-bold text-emerald-400 bg-emerald-900/20 px-2 py-0.5 rounded border border-emerald-800/50 uppercase">${g.kelas}</span>
+                                <h4 class="text-sm font-bold text-white mt-1">${g.topik}</h4>
+                                <span class="text-[11px] text-slate-400"><i class="fa-regular fa-calendar mr-1"></i>${g.tanggal} &bull; ${count} Siswa &bull; Rata-rata: <b class="text-indigo-400">${avg}</b></span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="window.editGrade('${g.id}')" class="text-indigo-400 hover:text-indigo-300 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="window.deleteGrade('${g.id}')" class="text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto max-h-48">
+                            <table class="w-full text-left text-xs">
+                                <thead class="text-slate-400 border-b border-slate-800 bg-slate-900/50 sticky top-0">
+                                    <tr><th class="p-2">No</th><th class="p-2">Nama Siswa</th><th class="p-2 text-right">Nilai</th></tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/50">
+                                    ${(g.dataSiswa || []).map((s, idx) => `
+                                        <tr>
+                                            <td class="p-2 text-slate-500">${idx + 1}</td>
+                                            <td class="p-2 text-slate-200">${s.nama}</td>
+                                            <td class="p-2 text-right font-bold ${s.nilai >= 75 ? 'text-emerald-400' : 'text-rose-400'}">${s.nilai}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.toggleGradesForm = function() {
+            const container = document.getElementById('grades-form-container');
+            if (!container) return;
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                window.scrollTo({ top: container.offsetTop - 50, behavior: 'smooth' });
+            } else {
+                container.classList.add('hidden');
+                document.getElementById('grades-form').reset();
+                document.getElementById('edit-grade-id').value = '';
+            }
+        };
+
+        window.editGrade = function(id) {
+            const g = cachedGrades.find(item => item.id === id);
+            if (!g) return;
+            window.toggleGradesForm();
+            document.getElementById('edit-grade-id').value = g.id;
+            document.getElementById('g-kelas').value = g.kelas || '';
+            document.getElementById('g-topik').value = g.topik || '';
+            document.getElementById('g-raw-data').value = (g.dataSiswa || []).map(s => `${s.nama}\t${s.nilai}`).join('\n');
+        };
+
+        window.deleteGrade = async function(id) {
+            if (is_preview) {
+                window.mockData.grades = window.mockData.grades.filter(g => g.id !== id);
+                loadGuruGrades();
+                window.showToast('Rekap nilai berhasil dihapus!');
+            } else {
+                try {
+                    if (db && currentUser) await deleteDoc(doc(db, 'users', currentUser.uid, 'grades', id));
+                    window.showToast('Rekap nilai berhasil dihapus dari Cloud!');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
+        window.switchSubNilai = function(sub) {
+            subTabNilai = sub;
+            localStorage.setItem('omni_subtab', sub);
+            const subRiwayat = document.getElementById('subcontent-riwayat');
+            const subDash = document.getElementById('subcontent-dashboard');
+            const btnRiwayat = document.getElementById('subtab-riwayat');
+            const btnDash = document.getElementById('subtab-dashboard');
+            if (!subRiwayat || !subDash) return;
+
+            if (sub === 'riwayat') {
+                subRiwayat.classList.remove('hidden');
+                subDash.classList.add('hidden');
+                if (btnRiwayat) btnRiwayat.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white";
+                if (btnDash) btnDash.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400";
+            } else {
+                subRiwayat.classList.add('hidden');
+                subDash.classList.remove('hidden');
+                if (btnRiwayat) btnRiwayat.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400";
+                if (btnDash) btnDash.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white";
+                updateMatrixClassOptions();
+                window.renderMatrixTable();
+            }
+        };
+
+        function updateMatrixClassOptions() {
+            const sel = document.getElementById('select-kelas-matrix');
+            if (!sel) return;
+            const classes = [...new Set(cachedGrades.map(g => g.kelas).filter(Boolean))].sort();
+            const cur = sel.value;
+            sel.innerHTML = `<option value="">Pilih Kelas...</option>` + classes.map(c => `<option value="${c}" ${c === cur ? 'selected' : ''}>${c}</option>`).join('');
+        }
+
+        window.renderMatrixTable = function() {
+            const sel = document.getElementById('select-kelas-matrix');
+            const c = document.getElementById('matrix-table-container');
+            const btnCsv = document.getElementById('btn-export-matrix');
+            const btnPdf = document.getElementById('btn-export-pdf');
+            if (!sel || !c) return;
+            const kls = sel.value;
+            if (!kls) {
+                c.innerHTML = `<p class="text-xs text-slate-500 italic py-4 text-center">Pilih kelas terlebih dahulu untuk melihat matriks.</p>`;
+                if (btnCsv) btnCsv.classList.add('hidden');
+                if (btnPdf) btnPdf.classList.add('hidden');
+                return;
+            }
+
+            if (btnCsv) btnCsv.classList.remove('hidden');
+            if (btnPdf) btnPdf.classList.remove('hidden');
+
+            const classGrades = cachedGrades.filter(g => g.kelas === kls);
+            if (classGrades.length === 0) {
+                c.innerHTML = `<p class="text-xs text-slate-500 italic py-4 text-center">Tidak ada sesi penilaian untuk kelas ${kls}.</p>`;
+                return;
+            }
+
+            const studentMap = {};
+            classGrades.forEach(g => {
+                (g.dataSiswa || []).forEach(s => {
+                    if (!studentMap[s.nama]) studentMap[s.nama] = {};
+                    studentMap[s.nama][g.topik] = s.nilai;
+                });
+            });
+
+            const students = Object.keys(studentMap).sort();
+            const topics = classGrades.map(g => g.topik);
+
+            c.innerHTML = `
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-950 text-slate-300 border-b border-slate-800">
+                        <tr>
+                            <th class="p-3 border-r border-slate-800">No</th>
+                            <th class="p-3 border-r border-slate-800">Nama Siswa</th>
+                            ${topics.map(t => `<th class="p-3 border-r border-slate-800 text-center">${t}</th>`).join('')}
+                            <th class="p-3 text-center bg-indigo-950/40 text-indigo-300">Rata-Rata</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        ${students.map((st, idx) => {
+                            let total = 0, count = 0;
+                            topics.forEach(t => {
+                                if (studentMap[st][t] !== undefined) {
+                                    total += studentMap[st][t];
+                                    count++;
+                                }
+                            });
+                            const avg = count > 0 ? (total / count).toFixed(1) : '-';
+                            return `
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-slate-500 border-r border-slate-800">${idx + 1}</td>
+                                    <td class="p-3 text-slate-200 font-medium border-r border-slate-800">${st}</td>
+                                    ${topics.map(t => {
+                                        const val = studentMap[st][t];
+                                        return `<td class="p-3 text-center border-r border-slate-800 ${val !== undefined ? (val >= 75 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold') : 'text-slate-600'}">${val !== undefined ? val : '-'}</td>`;
+                                    }).join('')}
+                                    <td class="p-3 text-center font-bold text-indigo-400 bg-indigo-950/20">${avg}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        };
+
+        window.exportMatrixCSV = function() {
+            const sel = document.getElementById('select-kelas-matrix');
+            if (!sel || !sel.value) return;
+            const kls = sel.value;
+            const classGrades = cachedGrades.filter(g => g.kelas === kls);
+            if (classGrades.length === 0) return;
+
+            const studentMap = {};
+            classGrades.forEach(g => {
+                (g.dataSiswa || []).forEach(s => {
+                    if (!studentMap[s.nama]) studentMap[s.nama] = {};
+                    studentMap[s.nama][g.topik] = s.nilai;
+                });
+            });
+
+            const students = Object.keys(studentMap).sort();
+            const topics = classGrades.map(g => g.topik);
+
+            let csv = `No,Nama Siswa,${topics.map(t => `"${t}"`).join(',')},Rata-Rata\n`;
+            students.forEach((st, idx) => {
+                let total = 0, count = 0;
+                const row = [idx + 1, `"${st}"`];
+                topics.forEach(t => {
+                    const val = studentMap[st][t];
+                    if (val !== undefined) {
+                        total += val;
+                        count++;
+                        row.push(val);
+                    } else {
+                        row.push('');
+                    }
+                });
+                row.push(count > 0 ? (total / count).toFixed(1) : '');
+                csv += row.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Matriks_Nilai_${kls}_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            window.showToast('CSV berhasil diekspor!');
+        };
+
+        window.exportMatrixPDF = function() {
+            const sel = document.getElementById('select-kelas-matrix');
+            if (!sel || !sel.value) return;
+            const el = document.getElementById('matrix-table-container');
+            if (!el) return;
+
+            window.showToast('Membangun dokumen PDF matriks...', 'success');
+            const opt = {
+                margin: 0.5,
+                filename: `Matriks_Nilai_${sel.value}_${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(el).save().then(() => {
+                window.showToast('PDF Matriks berhasil diunduh!');
+            });
+        };
+
+        function loadGraderExamsData() {
+            if (is_preview) {
+                graderExams = window.mockData.exams.filter(e => e.userId === currentUser.uid);
+                renderGraderExamsUI(graderExams);
+            } else {
+                if (!db || !currentUser) return;
+                onSnapshot(query(collection(db, 'exams'), where('userId', '==', currentUser.uid)), (snapshot) => {
+                    graderExams = [];
+                    snapshot.forEach(doc => graderExams.push({ id: doc.id, ...doc.data() }));
+                    renderGraderExamsUI(graderExams);
+                }, (err) => { console.error(err); });
+            }
+        }
+
+        function renderGraderExamsUI(exams) {
+            const container = document.getElementById('g-exams-container');
+            if (!container) return;
+            if (exams.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-8"><p class="text-xs text-slate-500 italic">Belum ada kunci jawaban atau ujian yang dibuat. Klik "Buat Kunci Baru" di atas.</p></div>`;
+                return;
+            }
+            container.innerHTML = exams.map(e => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-900/20 px-2 py-0.5 rounded border border-emerald-800/50 uppercase">${e.className || 'Semua Kelas'}</span>
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">KKM: ${e.kkm || 75}</span>
+                        </div>
+                        <h4 class="text-base font-bold text-white">${e.title}</h4>
+                        <p class="text-xs text-slate-400">${e.topic || 'Tanpa topik khusus'} &bull; ${(e.questions || []).length} Soal</p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                        <div class="flex items-center space-x-1">
+                            <button onclick="window.editGraderExam('${e.id}')" class="text-xs text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition" title="Edit Soal"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="window.openExamAnalytics('${e.id}')" class="text-xs text-purple-400 hover:text-purple-300 p-2 rounded-lg hover:bg-purple-950/30 transition" title="Statistik"><i class="fa-solid fa-chart-pie"></i></button>
+                            <button onclick="window.deleteGraderExam('${e.id}')" class="text-xs text-rose-400 hover:text-rose-300 p-2 rounded-lg hover:bg-rose-950/30 transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <button onclick="window.startKoreksi('${e.id}')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-md shadow-blue-600/20">
+                            <i class="fa-solid fa-check-to-slot"></i><span>Koreksi</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.navGrader = function(view) {
+            const d = document.getElementById('g-view-dashboard');
+            const ed = document.getElementById('g-view-editor');
+            const k = document.getElementById('g-view-koreksi');
+            if (!d || !ed || !k) return;
+            d.classList.add('hidden');
+            ed.classList.add('hidden');
+            k.classList.add('hidden');
+            if (view === 'dashboard') {
+                d.classList.remove('hidden');
+                loadGraderExamsData();
+            } else if (view === 'editor') {
+                if (!currentExamId) {
+                    document.getElementById('ge-title').value = '';
+                    document.getElementById('ge-class').value = '';
+                    document.getElementById('ge-topic').value = '';
+                    document.getElementById('ge-kkm').value = '75';
+                    editorQuestions = [];
+                    renderEditorQuestions();
+                }
+                ed.classList.remove('hidden');
+            } else if (view === 'koreksi') {
+                k.classList.remove('hidden');
+            }
+        };
+
+        window.deleteGraderExam = async function(id) {
+            if (is_preview) {
+                window.mockData.exams = window.mockData.exams.filter(x => x.id !== id);
+                loadGraderExamsData();
+                window.showToast('Kunci ujian berhasil dihapus!');
+            } else {
+                try {
+                    if (db) await deleteDoc(doc(db, 'exams', id));
+                    window.showToast('Kunci ujian berhasil dihapus dari Cloud!');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
         function renderGuruDashboardHTML() {
             return `
                 <div class="space-y-6">
@@ -768,9 +1426,9 @@
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <h3 class="text-base font-bold text-white"><i class="fa-solid fa-calendar-days text-indigo-400 mr-2"></i> Jadwal Mengajar Saya</h3>
                             
-                            <form onsubmit="window.addGuruSchedule(event)" class="flex flex-col md:flex-row gap-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <form onsubmit="window.addGuruSchedule(event)" class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 bg-slate-950 p-4 rounded-xl border border-slate-800 overflow-hidden">
                                 <input type="hidden" id="edit-sch-id">
-                                <select id="sch-hari" required class="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
+                                <select id="sch-hari" required class="w-full sm:w-36 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500 transition">
                                     <option value="">Pilih Hari...</option>
                                     <option value="Senin">Senin</option>
                                     <option value="Selasa">Selasa</option>
@@ -780,13 +1438,18 @@
                                     <option value="Sabtu">Sabtu</option>
                                     <option value="Ahad">Ahad</option>
                                 </select>
-                                <input type="text" id="sch-jamke" required placeholder="Jam Ke (cth: 1)" class="w-full md:w-28 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
-                                <input type="text" id="sch-waktu" required placeholder="Waktu (cth: 08:00 - 09:30)" class="w-full md:w-40 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
-                                <input type="text" id="sch-kelas" required placeholder="Kelas (cth: 7A)" class="w-full md:w-32 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
-                                <input type="text" id="sch-mapel" required placeholder="Mata Pelajaran" class="flex-1 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-500">
-                                <button type="submit" id="btn-submit-sch" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-indigo-600/20 whitespace-nowrap">
-                                    <i class="fa-solid fa-plus mr-1"></i> Tambah
-                                </button>
+                                <input type="text" id="sch-jamke" required placeholder="Jam Ke (cth: 1)" class="w-full sm:w-24 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500 transition">
+                                <input type="text" id="sch-waktu" required placeholder="Waktu (cth: 08:00 - 09:30)" class="w-full sm:w-36 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500 transition">
+                                <input type="text" id="sch-kelas" required placeholder="Kelas (cth: 7A)" class="w-full sm:w-28 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500 transition">
+                                <input type="text" id="sch-mapel" required placeholder="Mata Pelajaran" class="w-full sm:flex-1 min-w-0 bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500 transition">
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <button type="submit" id="btn-submit-sch" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-xs font-bold transition shadow-lg shadow-indigo-600/20 whitespace-nowrap flex items-center justify-center space-x-1.5">
+                                        <i class="fa-solid fa-plus text-xs"></i><span>Tambah</span>
+                                    </button>
+                                    <button type="button" id="btn-cancel-sch" onclick="window.cancelEditSchedule()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition border border-slate-700" title="Batal Edit">
+                                        Batal
+                                    </button>
+                                </div>
                             </form>
 
                             <div id="guru-schedule-list" class="space-y-2 pt-2"></div>
@@ -995,85 +1658,79 @@
                         </div>
 
                         <div id="g-view-koreksi" class="hidden space-y-4">
-                            <div class="flex justify-between items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl sticky top-20 z-40">
-                                <button onclick="window.navGrader('dashboard')" class="text-slate-400 hover:text-white text-xs"><i class="fa-solid fa-arrow-left mr-1"></i> Batal</button>
-                                <h3 id="gk-title" class="font-bold text-blue-400">Ujian...</h3>
-                                <button onclick="window.calculateGraderScore()" class="bg-blue-600 text-white text-xs font-bold px-5 py-2 rounded-xl shadow-lg shadow-blue-600/20">KOREKSI <i class="fa-solid fa-check ml-1"></i></button>
+                            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center bg-slate-900 border border-slate-800 p-4 rounded-2xl gap-3 sticky top-20 z-40 shadow-xl">
+                                <div class="flex items-center space-x-3">
+                                    <button onclick="window.navGrader('dashboard')" class="text-slate-400 hover:text-white text-xs bg-slate-800 px-3 py-2 rounded-lg transition">
+                                        <i class="fa-solid fa-arrow-left mr-1"></i> Kembali
+                                    </button>
+                                    <div>
+                                        <h4 id="gk-title" class="text-sm font-bold text-white truncate max-w-xs">Nama Ujian</h4>
+                                        <span class="text-[10px] text-slate-400">Lembar Koreksi Cepat Siswa</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" id="gk-student" placeholder="Nama Siswa yang Dikoreksi" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white outline-none focus:border-indigo-500 flex-1 sm:w-60">
+                                    <button onclick="window.calculateGraderScore()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg shadow-emerald-600/20 whitespace-nowrap flex items-center space-x-1.5">
+                                        <i class="fa-solid fa-check"></i><span>Selesai & Nilai</span>
+                                    </button>
+                                </div>
                             </div>
-                            
-                            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex items-center gap-4">
-                                <i class="fa-solid fa-user text-slate-500 text-xl"></i>
-                                <input type="text" id="gk-student" placeholder="Ketik Nama Siswa yang Dikoreksi..." class="flex-1 bg-transparent border-b border-slate-700 text-xl outline-none pb-2 text-white focus:border-blue-500">
-                            </div>
-
                             <div id="gk-answers-container" class="space-y-4"></div>
                         </div>
                     </div>
 
-                    <!-- TAB CATATAN EVALUASI ADMIN -->
-                    <div id="content-tab-evaluasi" class="hidden space-y-6">
-                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                            <h3 class="text-base font-bold text-white mb-2"><i class="fa-solid fa-envelope-open-text text-indigo-400 mr-2"></i> Catatan Kepala Madrasah / Admin</h3>
-                            <div id="guru-eval-list" class="space-y-3"></div>
-                        </div>
-                    </div>
-
-                    <!-- MODAL SKOR GRADER -->
-                    <div id="grader-result-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
-                        <div class="bg-slate-900 p-8 rounded-3xl max-w-sm w-full text-center border border-blue-500/30 shadow-2xl">
-                            <h3 class="text-slate-400 font-bold mb-2 text-xs tracking-widest">NILAI AKHIR</h3>
-                            <div id="res-score" class="text-7xl font-black text-blue-400 mb-2 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">100</div>
-                            <div id="res-status" class="mb-6 inline-block px-4 py-1 rounded-full text-xs font-bold border">TUNTAS</div>
-                            <p id="res-detail" class="text-sm text-slate-300 mb-6"></p>
-                            
-                            <div class="grid grid-cols-2 gap-3">
-                                <button onclick="window.closeGraderModal(false)" class="bg-slate-800 hover:bg-slate-700 py-3 rounded-xl text-xs font-bold text-slate-300 transition border border-slate-700">Edit Nilai</button>
-                                <button onclick="window.closeGraderModal(true)" class="bg-blue-600 hover:bg-blue-500 py-3 rounded-xl text-xs font-bold text-white transition shadow-lg shadow-blue-600/30">Lanjut Siswa <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    <!-- MODAL HASIL KOREKSI -->
+                    <div id="grader-result-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Hasil Evaluasi Otomatis</h3>
+                            <div id="res-score" class="text-7xl font-black mb-2 text-emerald-400">100</div>
+                            <div id="res-status" class="mb-4 inline-block px-4 py-1 rounded-full text-xs font-bold border bg-emerald-900/30 text-emerald-400 border-emerald-500/50">TUNTAS</div>
+                            <div id="res-detail" class="text-xs text-slate-400 mb-6 bg-slate-950 p-3 rounded-xl border border-slate-800">Skor: 10/10</div>
+                            <div class="flex gap-2">
+                                <button onclick="window.closeGraderModal(true)" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-600/20">
+                                    Siswa Berikutnya
+                                </button>
+                                <button onclick="window.closeGraderModal(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-4 py-3 rounded-xl transition border border-slate-700">
+                                    Tutup
+                                </button>
                             </div>
-                            <p class="text-[10px] text-emerald-400 mt-4 font-medium"><i class="fa-solid fa-check"></i> Otomatis disinkronisasi ke Rekap Harian</p>
                         </div>
                     </div>
 
-                    <!-- MODAL STATISTIK GRAFIK UJIAN -->
-                    <div id="exam-analytics-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
-                        <div class="bg-slate-900 p-6 rounded-3xl max-w-lg w-full border border-purple-500/30 shadow-2xl space-y-4">
+                    <!-- MODAL STATISTIK UJIAN -->
+                    <div id="exam-analytics-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
                             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                                 <div>
-                                    <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Analisis Performa</span>
-                                    <h3 id="analytics-exam-title" class="text-base font-bold text-white">Statistik Ujian</h3>
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-chart-pie text-purple-400"></i> Statistik Ujian
+                                    </h3>
+                                    <span id="analytics-exam-title" class="text-xs text-slate-400">Judul Ujian</span>
                                 </div>
-                                <button onclick="document.getElementById('exam-analytics-modal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                                <button onclick="document.getElementById('exam-analytics-modal').classList.add('hidden')" class="text-slate-400 hover:text-white p-1">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
-                            <div class="relative h-64 w-full">
+                            <div id="analytics-summary-text" class="text-xs text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800 text-center font-medium"></div>
+                            <div class="h-60 relative flex items-center justify-center">
                                 <canvas id="exam-chart-canvas"></canvas>
                             </div>
-                            <div id="analytics-summary-text" class="text-xs text-slate-300 text-center"></div>
-                            <button onclick="document.getElementById('exam-analytics-modal').classList.add('hidden')" class="w-full bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-bold text-slate-300 transition border border-slate-700">Tutup</button>
+                        </div>
+                    </div>
+
+                    <!-- TAB CATATAN EVALUASI -->
+                    <div id="content-tab-evaluasi" class="hidden space-y-6">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                            <div>
+                                <h3 class="text-base font-bold text-white"><i class="fa-solid fa-envelope-open-text text-indigo-400 mr-2"></i> Catatan & Arahan Kepala Madrasah</h3>
+                                <p class="text-xs text-slate-400 mt-1">Daftar evaluasi dan arahan resmi dari Kepala Madrasah atau Administrator untuk pengajar.</p>
+                            </div>
+                            <div id="guru-eval-list" class="space-y-4 pt-2"></div>
                         </div>
                     </div>
                 </div>
             `;
         }
-
-        window.switchTab = function(tab) {
-            currentTab = tab;
-            localStorage.setItem('omni_tab', tab);
-            ['jurnal', 'nilai', 'grader', 'evaluasi'].forEach(t => {
-                const btn = document.getElementById(`tab-btn-${t}`);
-                const content = document.getElementById(`content-tab-${t}`);
-                if(!btn || !content) return;
-                
-                if (t === tab) {
-                    btn.className = "px-4 py-2 rounded-xl text-xs font-semibold transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20 whitespace-nowrap";
-                    content.classList.remove('hidden');
-                } else {
-                    btn.className = "px-4 py-2 rounded-xl text-xs font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap";
-                    content.classList.add('hidden');
-                }
-            });
-            if(tab === 'grader') window.navGrader('dashboard');
-            if(tab === 'evaluasi') loadGuruEvaluations();
-        };
 
         window.toggleJurnalForm = function() {
             const container = document.getElementById('jurnal-form-container');
@@ -1378,9 +2035,37 @@
                     <p class="text-xs text-indigo-300"><strong>Tindak Lanjut:</strong> ${j.tindakLanjut}</p>
                     
                     ${j.adminNotes ? `
-                        <div class="mt-3 bg-blue-900/10 border border-blue-900/30 p-3 rounded-lg w-full">
-                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Catatan Admin</span>
-                            <p class="text-xs text-blue-100">${j.adminNotes}</p>
+                        <div class="mt-3 bg-blue-900/10 border border-blue-900/30 p-3.5 rounded-xl w-full space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
+                                    <i class="fa-solid fa-message text-blue-400"></i> Catatan Kepala Madrasah / Admin
+                                </span>
+                                ${j.adminNotesReaction ? `
+                                    <span class="bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1">
+                                        <i class="fa-solid fa-check-double text-[9px]"></i> Sudah Dikonfirmasi
+                                    </span>
+                                ` : `
+                                    <span class="bg-amber-950/40 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1">
+                                        <i class="fa-regular fa-clock text-[9px]"></i> Berikan Reaksi
+                                    </span>
+                                `}
+                            </div>
+                            <p class="text-xs text-blue-100 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 italic">"${j.adminNotes}"</p>
+                            
+                            <!-- Baris Tombol Reaksi Emoticon -->
+                            <div class="pt-1.5 flex flex-wrap items-center justify-between gap-2 border-t border-blue-900/30">
+                                <span class="text-[10px] text-slate-400 font-medium">Reaksi Anda:</span>
+                                <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800">
+                                    ${['👍', '🤲', '🫡', '✅', '❤️'].map(emoji => `
+                                        <button type="button" onclick="window.sendJournalReaction('${j.id}', '${emoji}')" 
+                                            class="w-7 h-7 flex items-center justify-center rounded text-sm hover:scale-125 transition-all ${j.adminNotesReaction === emoji ? 'bg-indigo-600/40 border border-indigo-400 scale-110 shadow-sm' : 'hover:bg-slate-800'}"
+                                            title="Kirim reaksi ${emoji}">
+                                            ${emoji}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                                ${j.adminNotesReaction ? `<span class="text-[10px] text-indigo-300 font-semibold flex items-center gap-1"><span class="text-sm">${j.adminNotesReaction}</span> Dikonfirmasi (${j.adminNotesReadAt || ''})</span>` : ''}
+                            </div>
                         </div>
                     ` : ''}
                 </div>
@@ -1412,469 +2097,62 @@
                 return;
             }
             c.innerHTML = evals.map(e => `
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-3 relative">
                     <div class="flex justify-between items-center text-xs">
                         <span class="font-bold text-indigo-400"><i class="fa-solid fa-user-shield mr-1"></i> ${e.adminName || 'Admin / Kamad'}</span>
-                        <span class="text-slate-400">${e.date}</span>
-                    </div>
-                    <p class="text-sm text-slate-200 bg-slate-900 p-3 rounded-lg border border-slate-800">${e.message}</p>
-                </div>
-            `).join('');
-        }
-
-        function loadGuruSchedules() {
-            if (is_preview) {
-                cachedSchedules = window.mockData.schedules.filter(s => s.userId === currentUser.uid);
-                renderGuruSchedulesUI(cachedSchedules);
-            } else {
-                if (!db) return;
-                onSnapshot(collection(db, 'users', currentUser.uid, 'schedules'), (snapshot) => {
-                    cachedSchedules = [];
-                    snapshot.forEach(doc => cachedSchedules.push({ id: doc.id, ...doc.data() }));
-                    renderGuruSchedulesUI(cachedSchedules);
-                }, (err) => { console.error(err); });
-            }
-        }
-
-        function renderGuruSchedulesUI(schedules) {
-            const container = document.getElementById('guru-schedule-list');
-            if(!container) return;
-            if (schedules.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 italic mt-3">Belum ada jadwal mengajar yang ditambahkan.</p>`;
-                return;
-            }
-
-            const daysIndo = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const currentDayIndo = daysIndo[new Date().getDay()];
-
-            container.innerHTML = schedules.sort((a,b) => {
-                const days = { 'Senin':1, 'Selasa':2, 'Rabu':3, 'Kamis':4, 'Jumat':5, 'Sabtu':6, 'Ahad':7 };
-                if(days[a.hari] !== days[b.hari]) return days[a.hari] - days[b.hari];
-                return parseInt(a.jamKe || 0) - parseInt(b.jamKe || 0);
-            }).map(s => {
-                const isToday = s.hari.trim().toLowerCase() === currentDayIndo.toLowerCase();
-                return `
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 rounded-xl gap-3 transition-all ${isToday ? 'bg-indigo-950/60 border border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40' : 'bg-slate-950 border border-slate-800'}">
-                        <div class="flex items-center gap-3 flex-wrap">
-                            <span class="text-[10px] font-bold uppercase px-3 py-1 rounded-lg border w-20 text-center flex-shrink-0 ${isToday ? 'text-indigo-200 bg-indigo-500/30 border-indigo-500/50' : 'text-indigo-400 bg-indigo-500/10 border-indigo-500/25'}">${s.hari}</span>
-                            ${isToday ? '<span class="text-[9px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">✨ Hari Ini</span>' : ''}
-                            <span class="text-[10px] text-slate-300 font-bold bg-slate-900 px-2 py-1 rounded-lg border border-slate-800">Jam ke-${s.jamKe}</span>
-                            <span class="text-xs text-slate-300 font-mono bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1.5"></i>${s.waktu}</span>
-                            <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/25 whitespace-nowrap">${s.kelas}</span>
-                            <span class="text-xs font-bold text-white flex-1 truncate">${s.mapel}</span>
-                        </div>
                         <div class="flex items-center space-x-2">
-                            <button onclick="window.editGuruSchedule('${s.id}', '${s.hari}', '${s.jamKe}', '${s.waktu}', '${s.kelas}', '${s.mapel.replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300 p-1.5 transition" title="Edit Jadwal"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="window.deleteGuruSchedule('${s.id}')" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Hapus Jadwal"><i class="fa-solid fa-trash text-xs"></i></button>
+                            ${e.isRead || e.reaction || e.reply ? `
+                                <span class="bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                                    <i class="fa-solid fa-check-double text-[9px]"></i> Sudah Dibaca
+                                </span>
+                            ` : `
+                                <span class="bg-amber-950/40 text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                                    <i class="fa-regular fa-clock text-[9px]"></i> Belum Dikonfirmasi
+                                </span>
+                            `}
+                            <span class="text-slate-400">${e.date}</span>
                         </div>
                     </div>
-                `;
-            }).join('');
-        }
-
-        window.addGuruSchedule = async function(e) {
-            e.preventDefault();
-            const editId = document.getElementById('edit-sch-id').value;
-            const data = {
-                hari: document.getElementById('sch-hari').value,
-                jamKe: document.getElementById('sch-jamke').value.trim(),
-                waktu: document.getElementById('sch-waktu').value.trim(),
-                kelas: document.getElementById('sch-kelas').value.trim(),
-                mapel: document.getElementById('sch-mapel').value.trim(),
-                userId: currentUser.uid
-            };
-            
-            if (is_preview) {
-                if(editId) {
-                    const idx = window.mockData.schedules.findIndex(s => s.id === editId);
-                    if(idx > -1) window.mockData.schedules[idx] = { id: editId, ...data };
-                } else {
-                    window.mockData.schedules.push({ id: 'sch_' + Date.now(), ...data });
-                }
-                loadGuruSchedules();
-                resetSchForm(e.target);
-                window.showToast('Jadwal tersimpan!', 'success');
-            } else {
-                try {
-                    if (db) {
-                        if(editId) {
-                            await updateDoc(doc(db, 'users', currentUser.uid, 'schedules', editId), data);
-                            window.showToast('Jadwal berhasil diperbarui di Cloud!', 'success');
-                        } else {
-                            await addDoc(collection(db, 'users', currentUser.uid, 'schedules'), data);
-                            window.showToast('Jadwal berhasil ditambahkan ke Cloud!', 'success');
-                        }
-                    }
-                    resetSchForm(e.target);
-                } catch(err) {
-                    window.showToast(err.message, 'error');
-                }
-            }
-        };
-
-        function resetSchForm(formEl) {
-            formEl.reset();
-            document.getElementById('edit-sch-id').value = '';
-            document.getElementById('btn-submit-sch').innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Tambah';
-        }
-
-        window.editGuruSchedule = function(id, hari, jamKe, waktu, kelas, mapel) {
-            document.getElementById('edit-sch-id').value = id;
-            document.getElementById('sch-hari').value = hari;
-            document.getElementById('sch-jamke').value = jamKe;
-            document.getElementById('sch-waktu').value = waktu;
-            document.getElementById('sch-kelas').value = kelas;
-            document.getElementById('sch-mapel').value = mapel;
-            document.getElementById('btn-submit-sch').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Simpan';
-            
-            const formContainer = document.getElementById('sch-hari');
-            if (formContainer) window.scrollTo({ top: formContainer.offsetTop - 150, behavior: 'smooth' });
-        };
-
-        window.deleteGuruSchedule = async function(scheduleId) {
-            if (is_preview) {
-                window.mockData.schedules = window.mockData.schedules.filter(s => s.id !== scheduleId);
-                loadGuruSchedules();
-                window.showToast('Jadwal berhasil dihapus', 'success');
-            } else {
-                try {
-                    if (db) await deleteDoc(doc(db, 'users', currentUser.uid, 'schedules', scheduleId));
-                    window.showToast('Jadwal berhasil dihapus', 'success');
-                } catch(err) {
-                    window.showToast(err.message, 'error');
-                }
-            }
-        };
-
-        window.switchSubNilai = function(sub) {
-            subTabNilai = sub;
-            localStorage.setItem('omni_subtab', sub);
-            ['riwayat', 'dashboard'].forEach(s => {
-                const btn = document.getElementById(`subtab-${s}`);
-                const content = document.getElementById(`subcontent-${s}`);
-                if(s === sub) {
-                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white";
-                    content.classList.remove('hidden');
-                } else {
-                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400";
-                    content.classList.add('hidden');
-                }
-            });
-        };
-
-        window.toggleGradesForm = function() {
-            const container = document.getElementById('grades-form-container');
-            container.classList.toggle('hidden');
-            if(!container.classList.contains('hidden')) {
-                document.getElementById('grades-form').reset();
-                document.getElementById('edit-grade-id').value = '';
-            }
-        };
-
-        window.editGrade = function(id) {
-            const g = cachedGrades.find(item => item.id === id);
-            if (!g) return;
-            const container = document.getElementById('grades-form-container');
-            container.classList.remove('hidden');
-            document.getElementById('edit-grade-id').value = g.id;
-            document.getElementById('g-kelas').value = g.kelas || '';
-            document.getElementById('g-topik').value = g.topik || '';
-            
-            const rawData = g.dataSiswa.map(s => `${s.nama}\t${s.nilai}`).join('\n');
-            document.getElementById('g-raw-data').value = rawData;
-            
-            window.scrollTo({ top: container.offsetTop - 50, behavior: 'smooth' });
-        };
-
-        window.deleteGrade = async function(id) {
-            if (is_preview) {
-                window.mockData.grades = window.mockData.grades.filter(g => g.id !== id);
-                loadGuruGrades();
-                window.showToast('Rekap dihapus', 'success');
-            } else {
-                try {
-                    if (db) await deleteDoc(doc(db, 'users', currentUser.uid, 'grades', id));
-                    window.showToast('Rekap berhasil dihapus', 'success');
-                } catch (err) {
-                    window.showToast(err.message, 'error');
-                }
-            }
-        };
-
-        function loadGuruGrades() {
-            if (is_preview) {
-                cachedGrades = window.mockData.grades.filter(g => g.userId === currentUser.uid);
-                renderGradesUI(cachedGrades);
-                populateMatrixDropdown(cachedGrades);
-            } else {
-                if (!db) return;
-                onSnapshot(collection(db, 'users', currentUser.uid, 'grades'), (snapshot) => {
-                    cachedGrades = [];
-                    snapshot.forEach(doc => cachedGrades.push({ id: doc.id, ...doc.data() }));
-                    renderGradesUI(cachedGrades);
-                    populateMatrixDropdown(cachedGrades);
-                }, (err) => { console.error(err); });
-            }
-        }
-
-        function renderGradesUI(grades) {
-            const container = document.getElementById('guru-grades-grid');
-            if(!container) return;
-            if (grades.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada rekap nilai kelas.</p>`;
-                return;
-            }
-            container.innerHTML = grades.map(g => `
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-3">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                        <div>
-                            <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-md border border-indigo-500/25 uppercase">${g.kelas}</span>
-                            <h4 class="text-sm font-bold text-white mt-1.5">${g.topik}</h4>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <span class="text-xs text-slate-400 font-medium">${g.tanggal}</span>
-                            <button onclick="window.editGrade('${g.id}')" class="text-indigo-400 hover:text-indigo-300 transition" title="Edit Nilai"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="window.deleteGrade('${g.id}')" class="text-rose-400 hover:text-rose-300 transition" title="Hapus Nilai"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead>
-                                <tr class="text-slate-400 border-b border-slate-900">
-                                    <th class="pb-2">Nama Siswa</th>
-                                    <th class="pb-2 text-center">Nilai</th>
-                                    <th class="pb-2 text-center">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-900/50">
-                                ${g.dataSiswa.map(s => `
-                                    <tr>
-                                        <td class="py-2 text-slate-200 font-medium">${s.nama}</td>
-                                        <td class="py-2 text-center font-bold text-white">${s.nilai}</td>
-                                        <td class="py-2 text-center">
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.nilai >= 75 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
-                                                ${s.nilai >= 75 ? 'Tuntas' : 'Remedial'}
-                                            </span>
-                                        </td>
-                                    </tr>
+                    <p class="text-sm text-slate-200 bg-slate-900 p-4 rounded-xl border border-slate-800 leading-relaxed">${e.message}</p>
+                    
+                    <!-- Pilihan Reaksi Emoticon & Balasan Guru -->
+                    <div class="pt-2 border-t border-slate-800 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-[11px] font-semibold text-slate-400 flex items-center">
+                                <i class="fa-regular fa-face-smile text-indigo-400 mr-1.5"></i> Reaksi Cepat (Tanda Sudah Baca):
+                            </span>
+                            <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                                ${['👍', '🤲', '🫡', '✅', '❤️'].map(emoji => `
+                                    <button type="button" onclick="window.sendGuruReaction('${e.id}', '${emoji}')" 
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg text-sm hover:scale-125 transition-all ${e.reaction === emoji ? 'bg-indigo-600/30 border border-indigo-500 scale-110 shadow-sm' : 'hover:bg-slate-800'}"
+                                        title="Kirim reaksi ${emoji}">
+                                        ${emoji}
+                                    </button>
                                 `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `).sort().reverse().join('');
-        }
+                            </div>
+                        </div>
 
-        function populateMatrixDropdown(grades) {
-            const select = document.getElementById('select-kelas-matrix');
-            if (!select) return;
-            const unique = [...new Set(grades.map(g => g.kelas))];
-            select.innerHTML = `<option value="">Pilih Kelas...</option>` + unique.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
+                        ${e.reaction || e.reply ? `
+                            <div class="bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-3 flex items-start space-x-2.5 text-xs">
+                                <span class="text-xl leading-none">${e.reaction || '💬'}</span>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-center mb-0.5">
+                                        <span class="font-bold text-indigo-300">Respon Anda:</span>
+                                        <span class="text-[10px] text-slate-400">${e.readAt || ''}</span>
+                                    </div>
+                                    ${e.reply ? `<p class="text-slate-200 italic">"${e.reply}"</p>` : `<span class="text-slate-400 text-[11px]">Telah memberikan reaksi tanda sudah membaca.</span>`}
+                                </div>
+                            </div>
+                        ` : ''}
 
-        window.renderMatrixTable = function() {
-            const kelas = document.getElementById('select-kelas-matrix').value;
-            const c = document.getElementById('matrix-table-container');
-            const btnExport = document.getElementById('btn-export-matrix');
-            const btnExportPDF = document.getElementById('btn-export-pdf');
-
-            if (!kelas) {
-                if(btnExport) btnExport.classList.add('hidden');
-                if(btnExportPDF) btnExportPDF.classList.add('hidden');
-                return c.innerHTML = `Pilih kelas dahulu.`;
-            }
-
-            const cGrades = cachedGrades.filter(g => g.kelas === kelas);
-            if (cGrades.length === 0) {
-                if(btnExport) btnExport.classList.add('hidden');
-                if(btnExportPDF) btnExportPDF.classList.add('hidden');
-                return c.innerHTML = `Tidak ada data.`;
-            }
-
-            if(btnExport) btnExport.classList.remove('hidden');
-            if(btnExportPDF) btnExportPDF.classList.remove('hidden');
-
-            const map = {};
-            cGrades.forEach(g => {
-                g.dataSiswa.forEach(s => {
-                    if (!map[s.nama]) map[s.nama] = {};
-                    map[s.nama][g.topik] = s.nilai;
-                });
-            });
-
-            const students = Object.keys(map).sort();
-            const topics = cGrades.map(g => g.topik);
-
-            c.innerHTML = `
-                <table class="w-full text-left text-xs border-collapse border border-slate-800">
-                    <thead>
-                        <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
-                            <th class="p-2 border border-slate-800">Nama Siswa</th>
-                            ${topics.map(t => `<th class="p-2 border border-slate-800 text-center truncate max-w-[100px]" title="${t}">${t}</th>`).join('')}
-                            <th class="p-2 border border-slate-800 text-center text-indigo-400">Rata-Rata</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                        ${students.map(name => {
-                            let total = 0, count = 0;
-                            const cells = topics.map(t => {
-                                const val = map[name][t];
-                                if (val !== undefined) { total += val; count++; }
-                                return `<td class="p-2 border border-slate-800 text-center font-medium ${val !== undefined && val < 75 ? 'text-rose-400' : 'text-slate-200'}">${val !== undefined ? val : '-'}</td>`;
-                            }).join('');
-                            const avg = count > 0 ? (total / count).toFixed(1) : '-';
-                            return `<tr><td class="p-2 border border-slate-800 font-semibold text-white">${name}</td>${cells}<td class="p-2 border border-slate-800 text-center font-bold text-indigo-400">${avg}</td></tr>`;
-                        }).join('')}
-                    </tbody>
-                </table>
-            `;
-        };
-
-        window.exportMatrixCSV = function() {
-            const kelas = document.getElementById('select-kelas-matrix').value;
-            if (!kelas) return window.showToast('Pilih kelas terlebih dahulu', 'error');
-
-            const cGrades = cachedGrades.filter(g => g.kelas === kelas);
-            if (cGrades.length === 0) return window.showToast('Tidak ada data untuk diekspor', 'error');
-
-            const map = {};
-            cGrades.forEach(g => {
-                g.dataSiswa.forEach(s => {
-                    if (!map[s.nama]) map[s.nama] = {};
-                    map[s.nama][g.topik] = s.nilai;
-                });
-            });
-
-            const students = Object.keys(map).sort();
-            const topics = cGrades.map(g => g.topik);
-
-            let csvContent = "Nama Siswa," + topics.map(t => `"${t.replace(/"/g, '""')}"`).join(",") + ",Rata-Rata\n";
-
-            students.forEach(name => {
-                let total = 0, count = 0;
-                let row = `"${name}"`;
-                topics.forEach(t => {
-                    const val = map[name][t];
-                    if (val !== undefined) { total += val; count++; }
-                    row += `,${val !== undefined ? val : ''}`;
-                });
-                const avg = count > 0 ? (total / count).toFixed(1) : '';
-                row += `,${avg}\n`;
-                csvContent += row;
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Rekap_Nilai_${kelas.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.showToast('Matriks berhasil diunduh (CSV)!', 'success');
-        };
-
-        window.exportMatrixPDF = function() {
-            const kelas = document.getElementById('select-kelas-matrix').value;
-            if (!kelas) return window.showToast('Pilih kelas terlebih dahulu', 'error');
-
-            const tableContainer = document.getElementById('matrix-table-container');
-            if (!tableContainer || tableContainer.innerText.includes('Tidak ada data') || tableContainer.innerText.includes('Pilih kelas')) {
-                return window.showToast('Tidak ada data untuk diekspor', 'error');
-            }
-
-            window.showToast('Membangun dokumen PDF...', 'success');
-
-            const printElement = document.createElement('div');
-            printElement.innerHTML = `
-                <div style="padding: 30px; font-family: sans-serif; color: black; background: white;">
-                    <h2 style="text-align: center; margin-bottom: 5px; color: #1e293b;">REKAPITULASI NILAI SISWA</h2>
-                    <h4 style="text-align: center; margin-top: 0; color: #475569; margin-bottom: 30px;">Kelas: ${kelas}</h4>
-                    <style>
-                        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-                        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: center; color: black !important; }
-                        th { background-color: #f1f5f9; font-weight: bold; color: #334155 !important; }
-                        td:first-child { text-align: left; font-weight: bold; }
-                    </style>
-                    ${tableContainer.innerHTML}
-                </div>
-            `;
-
-            const opt = {
-                margin:       0.5,
-                filename:     `Rekap_Nilai_${kelas.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, backgroundColor: '#ffffff' },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
-            };
-
-            html2pdf().set(opt).from(printElement).save().then(() => {
-                window.showToast('Dokumen berhasil diunduh (PDF)!', 'success');
-            });
-        };
-
-        window.navGrader = function(view) {
-            ['dashboard', 'editor', 'koreksi'].forEach(v => document.getElementById(`g-view-${v}`).classList.add('hidden'));
-            document.getElementById(`g-view-${view}`).classList.remove('hidden');
-            if (view === 'dashboard') renderGraderDash();
-        };
-
-        window.deleteGraderExam = async function(id) {
-            if(is_preview) {
-                window.mockData.exams = window.mockData.exams.filter(e => e.id !== id);
-                loadGraderExamsData();
-                window.showToast('Instrumen ujian dihapus', 'success');
-            } else {
-                try {
-                    if (db) await deleteDoc(doc(db, 'exams', id));
-                    window.showToast('Instrumen ujian berhasil dihapus', 'success');
-                } catch(err) {
-                    window.showToast(err.message, 'error');
-                }
-            }
-        };
-
-        function loadGraderExamsData() {
-            if (is_preview) {
-                graderExams = window.mockData.exams.filter(e => e.userId === currentUser.uid);
-                renderGraderDash();
-            } else {
-                if (!db) return;
-                const qRef = query(collection(db, 'exams'), where('userId', '==', currentUser.uid));
-                onSnapshot(qRef, (snapshot) => {
-                    graderExams = [];
-                    snapshot.forEach(doc => graderExams.push({ id: doc.id, ...doc.data() }));
-                    if(document.getElementById('g-view-dashboard') && !document.getElementById('g-view-dashboard').classList.contains('hidden')) {
-                        renderGraderDash();
-                    }
-                }, (err) => { console.error(err); });
-            }
-        }
-
-        function renderGraderDash() {
-            const c = document.getElementById('g-exams-container');
-            if(!c) return;
-            if (graderExams.length === 0) {
-                c.innerHTML = `<div class="col-span-full text-center text-slate-500 py-6 text-sm">Belum ada bank soal. Klik Buat Kunci Baru.</div>`;
-                return;
-            }
-            c.innerHTML = graderExams.map(e => `
-                <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 hover:border-blue-500/50 transition relative overflow-hidden space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded border border-blue-500/20 uppercase">${e.className || 'Tanpa Kelas'}</span>
-                        <button onclick="window.openExamAnalytics('${e.id}')" class="text-purple-400 hover:text-purple-300 text-xs font-semibold bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20 transition flex items-center space-x-1" title="Lihat Grafik Statistik">
-                            <i class="fa-solid fa-chart-pie"></i><span>Grafik</span>
-                        </button>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold text-white mb-0.5">${e.title}</h3>
-                        <p class="text-xs text-purple-400"><i class="fa-solid fa-tag mr-1"></i>${e.topic || 'Tanpa Topik'}</p>
-                    </div>
-                    <div class="flex gap-2 pt-1">
-                        <button onclick="window.startKoreksi('${e.id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg text-xs font-bold transition shadow-md shadow-blue-600/20">Koreksi</button>
-                        <button onclick="window.editGraderExam('${e.id}')" class="bg-slate-800 text-slate-300 px-3.5 rounded-lg border border-slate-700 hover:bg-slate-700 transition" title="Edit Kunci"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="window.deleteGraderExam('${e.id}')" class="bg-slate-800 text-rose-400 px-3.5 rounded-lg border border-slate-700 hover:bg-slate-700 transition" title="Hapus Kunci"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <form onsubmit="window.sendGuruEvalReply(event, '${e.id}')" class="flex gap-2">
+                            <input type="text" id="eval-reply-${e.id}" placeholder="Tulis balasan konfirmasi (Cth: Syukran ustadz, siap dievaluasi...)" 
+                                value="${e.reply || ''}"
+                                class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-indigo-500">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-md shadow-indigo-600/20 flex items-center space-x-1 whitespace-nowrap">
+                                <i class="fa-solid fa-paper-plane text-[10px]"></i><span>Kirim</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             `).join('');
