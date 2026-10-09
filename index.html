@@ -29,10 +29,10 @@
 </head>
 <body class="h-full bg-slate-950 dark:bg-slate-950 text-slate-100 dark:text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200" id="body-root">
 
-    <!-- Toast Container -->
+    <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-[100] space-y-2 pointer-events-none"></div>
 
-    <!-- APLIKASI UTAMA -->
+    <!-- ROOT CONTAINER APLIKASI -->
     <div id="app" class="min-h-full flex flex-col">
         <div class="flex items-center justify-center flex-grow p-6">
             <div class="text-center">
@@ -42,22 +42,25 @@
         </div>
     </div>
 
-    <!-- Firebase SDK & Core Logic -->
+    <!-- Firebase SDK & Logika Sistem Terpadu -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, updateDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { collectionGroup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // SAKELAR SIMULASI (true = Mode Preview / false = Mode Cloud Produksi)
         const is_preview = false; 
 
+        // Data Simulasi Lengkap untuk Preview Instan
         window.mockData = {
             users: [
                 { id: 'mock-guru-id', name: 'Saprudin, S.Ag', email: 'saprudin@ud.in', role: 'guru' },
                 { id: 'mock-guru-2', name: 'Umar Abu Zubair, S.H', email: 'muzkyn123@gmail.com', role: 'guru' }
             ],
             journals: [
-                { id: 'j_1', userId: 'mock-guru-id', kelas: 'Kelas 5', tanggal: '2026-08-19', waktu: '09.05 - 10.30', mapel: 'Al-Qur\'an Hadis', materi: 'Tarqiq, Tafkhim, jawazul wajhain', tujuan: 'Agar thullab bisa mengetahui hukum tajwid tentang Tarqiq, Tafkhim, jawazul wajhain', metode: 'Ceramah & Tanya Jawab', media: 'Buku LKS, PROYEKTOR', kehadiran: 'Hadir semua', capaian: 'Secara umum sudah paham', kendala: 'Tidak ada', tindakLanjut: 'Minggu depan akan dikasih latihan' }
+                { id: 'j_1', userId: 'mock-guru-id', kelas: 'Kelas 5', tanggal: '2026-08-19', waktu: '09.05 - 10.30', mapel: 'Al-Qur\'an Hadis', materi: 'Tarqiq, Tafkhim, jawazul wajhain', tujuan: 'Agar thullab bisa mengetahui hukum tajwid tentang Tarqiq, Tafkhim, jawazul wajhain', metode: 'Ceramah & Tanya Jawab', media: 'Buku LKS, PROYEKTOR', kehadiran: 'Hadir semua', capaian: 'Secara umum sudah paham', kendala: 'Tidak ada', tindakLanjut: 'Minggu depan akan dikasih latihan' },
+                { id: 'j_2', userId: 'mock-guru-id', kelas: 'Kelas 7A', tanggal: '2026-08-25', waktu: '08.00 - 09.30', mapel: 'Fiqih', materi: 'Ketentuan Thaharah dan Najis Mutawassithah', tujuan: 'Memahami tata cara bersuci dari najis sedang dengan benar', metode: 'Demonstrasi & Praktik Langsung', media: 'Air, Kitab Fiqih, Papan Tulis', kehadiran: '28 Hadir, 2 Izin', capaian: '85% santri mampu mempraktikkan', kendala: 'Waktu praktik terbatas', tindakLanjut: 'Evaluasi setoran pekan depan' }
             ],
             grades: [
                 { id: 'g_1', userId: 'mock-guru-id', kelas: 'Kelas 5', topik: 'Menganalisis Hukum bacaan Mim Sukun surah Yasiin (13-22)', tanggal: '2026-08-21', dataSiswa: [
@@ -70,7 +73,8 @@
                 ]}
             ],
             schedules: [
-                { id: 'sch_1', userId: 'mock-guru-id', hari: 'Senin', jamKe: '1', waktu: '08:00 - 09:30', kelas: 'Kelas 5', mapel: 'Al-Qur\'an Hadis' }
+                { id: 'sch_1', userId: 'mock-guru-id', hari: 'Senin', jamKe: '1', waktu: '08:00 - 09:30', kelas: 'Kelas 5', mapel: 'Al-Qur\'an Hadis' },
+                { id: 'sch_2', userId: 'mock-guru-id', hari: 'Jumat', jamKe: '2', waktu: '09:00 - 10:30', kelas: 'Kelas 7A', mapel: 'Fiqih' }
             ],
             evaluations: []
         };
@@ -85,13 +89,13 @@
           measurementId: "G-JXVKCVFSFX"
         };
 
-        let app, auth = null, db = null;
+        let app = null, auth = null, db = null;
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
         } catch (e) {
-            console.error("Firebase init error:", e);
+            console.warn("Firebase standby mode:", e);
         }
 
         let currentUser = null;
@@ -105,6 +109,16 @@
         let graderExams = [];
         let currentExamId = null;
         let editorQuestions = [];
+
+        // State Filter Khusus Riwayat Jurnal Guru (Rentang Tanggal)
+        let jurnalFilterKelas = '';
+        let jurnalFilterTanggalMulai = '';
+        let jurnalFilterTanggalSelesai = '';
+
+        // State Filter Khusus Riwayat Jurnal Admin (Rentang Tanggal)
+        let adminJurnalFilterKelas = '';
+        let adminJurnalFilterTanggalMulai = '';
+        let adminJurnalFilterTanggalSelesai = '';
 
         let adminSelectedTeacherId = null; 
         let adminCachedUsers = [];
@@ -319,6 +333,9 @@
                                 </div>
                             </div>
                             <div class="flex items-center space-x-3">
+                                <button onclick="window.toggleRoleSimulation()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg font-bold transition">
+                                    Ganti Role (${userRole === 'admin' ? 'Guru' : 'Admin'})
+                                </button>
                                 <button onclick="window.toggleTheme()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition border border-slate-700" title="Ganti Tema">
                                     <i id="theme-icon" class="fa-solid ${localStorage.getItem('theme') === 'light' ? 'fa-moon text-slate-300' : 'fa-sun text-amber-400'} text-sm"></i>
                                 </button>
@@ -335,6 +352,17 @@
                 </main>
             `;
 
+            window.toggleRoleSimulation = function() {
+                userRole = userRole === 'admin' ? 'guru' : 'admin';
+                if (userRole === 'admin') {
+                    currentUser = { uid: 'mock-admin-id', email: 'admin@alirsyad.id', name: 'Kepala Madrasah', role: 'admin' };
+                } else {
+                    currentUser = { uid: 'mock-guru-id', email: 'saprudin@ud.in', name: 'Saprudin, S.Ag', role: 'guru' };
+                }
+                renderMainDashboard();
+                window.showToast(`Mode dialihkan ke: ${userRole.toUpperCase()}`);
+            };
+
             document.getElementById('btn-logout').addEventListener('click', async () => {
                 if (is_preview) {
                     currentUser = null;
@@ -350,7 +378,7 @@
                 window.switchTab(currentTab);
                 window.switchSubNilai(subTabNilai);
             }
-        }
+        };
 
         function initAdminLogic() {
             const container = document.getElementById('admin-teacher-list');
@@ -390,12 +418,35 @@
 
         window.selectAdminTeacher = function(id) {
             adminSelectedTeacherId = id;
+            adminJurnalFilterKelas = '';
+            adminJurnalFilterTanggalMulai = '';
+            adminJurnalFilterTanggalSelesai = '';
+            renderAdminData();
+        };
+
+        window.setAdminJurnalFilterKelas = function(val) {
+            adminJurnalFilterKelas = val;
+            renderAdminData();
+        };
+
+        window.setAdminJurnalFilterTanggalMulai = function(val) {
+            adminJurnalFilterTanggalMulai = val;
+            renderAdminData();
+        };
+
+        window.setAdminJurnalFilterTanggalSelesai = function(val) {
+            adminJurnalFilterTanggalSelesai = val;
+            renderAdminData();
+        };
+
+        window.resetAdminJurnalFilter = function() {
+            adminJurnalFilterKelas = '';
+            adminJurnalFilterTanggalMulai = '';
+            adminJurnalFilterTanggalSelesai = '';
             renderAdminData();
         };
 
         window.deleteAdminTeacher = async function(id, name) {
-            if(!confirm(`PERINGATAN: Apakah Anda yakin ingin memusnahkan akun guru "${name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
-            
             if (is_preview) {
                 window.mockData.users = window.mockData.users.filter(u => u.id !== id);
                 adminCachedUsers = window.mockData.users;
@@ -433,6 +484,19 @@
 
             const daysIndo = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             const currentDayIndo = daysIndo[new Date().getDay()];
+
+            const uniqueKelasAdmin = [...new Set(tJournals.map(j => j.kelas).filter(Boolean))].sort();
+            let filteredAdminJournals = [...tJournals];
+            if (adminJurnalFilterKelas) {
+                filteredAdminJournals = filteredAdminJournals.filter(j => j.kelas === adminJurnalFilterKelas);
+            }
+            if (adminJurnalFilterTanggalMulai) {
+                filteredAdminJournals = filteredAdminJournals.filter(j => j.tanggal >= adminJurnalFilterTanggalMulai);
+            }
+            if (adminJurnalFilterTanggalSelesai) {
+                filteredAdminJournals = filteredAdminJournals.filter(j => j.tanggal <= adminJurnalFilterTanggalSelesai);
+            }
+            filteredAdminJournals.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
 
             const sidebarHTML = `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex-shrink-0 w-full md:w-80 h-fit">
@@ -508,6 +572,7 @@
                             </div>
                         </div>
 
+                        <!-- EVALUASI DARI KEPALA MADRASAH -->
                         <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
                             <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center">
                                 <i class="fa-solid fa-paper-plane mr-2 text-blue-500"></i> KIRIM CATATAN EVALUASI
@@ -520,13 +585,34 @@
                             </form>
                         </div>
 
+                        <!-- RIWAYAT JURNAL LENGKAP -->
                         <div class="space-y-4">
-                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center mb-4">
-                                <i class="fa-solid fa-book text-blue-500 mr-2"></i> RIWAYAT JURNAL MENGAJAR
-                            </h3>
-                            ${tJournals.length === 0 ? `<p class="text-sm text-slate-500 italic">Belum ada jurnal yang diisi oleh guru ini.</p>` : `
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                                <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center whitespace-nowrap">
+                                    <i class="fa-solid fa-book text-blue-500 mr-2"></i> RIWAYAT JURNAL MENGAJAR
+                                </h3>
+                                <div class="flex flex-wrap items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800">
+                                    <span class="text-[11px] text-slate-400 font-medium flex items-center mr-1">
+                                        <i class="fa-solid fa-filter text-blue-400 mr-1.5"></i> Filter:
+                                    </span>
+                                    <select onchange="window.setAdminJurnalFilterKelas(this.value)" class="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-blue-500">
+                                        <option value="">Semua Kelas</option>
+                                        ${uniqueKelasAdmin.map(k => `<option value="${k}" ${k === adminJurnalFilterKelas ? 'selected' : ''}>${k}</option>`).join('')}
+                                    </select>
+                                    <div class="flex items-center space-x-1.5 text-slate-400 text-xs">
+                                        <span class="text-[10px] text-slate-400">Dari:</span>
+                                        <input type="date" value="${adminJurnalFilterTanggalMulai}" onchange="window.setAdminJurnalFilterTanggalMulai(this.value)" class="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500">
+                                        <span class="text-[10px] text-slate-400">s/d:</span>
+                                        <input type="date" value="${adminJurnalFilterTanggalSelesai}" onchange="window.setAdminJurnalFilterTanggalSelesai(this.value)" class="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500">
+                                    </div>
+                                    <button onclick="window.resetAdminJurnalFilter()" class="text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 transition flex items-center space-x-1" title="Reset Filter">
+                                        <i class="fa-solid fa-rotate-left"></i><span>Reset</span>
+                                    </button>
+                                </div>
+                            </div>
+                            ${filteredAdminJournals.length === 0 ? `<p class="text-sm text-slate-500 italic py-4">Tidak ada jurnal yang sesuai dengan kriteria filter.</p>` : `
                                 <div class="space-y-4">
-                                    ${tJournals.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).map(j => `
+                                    ${filteredAdminJournals.map(j => `
                                         <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 md:p-6 text-sm text-slate-300 space-y-3 hover:border-slate-700 transition-colors relative">
                                             <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-2 mb-2">
                                                 <div class="space-y-1">
@@ -641,7 +727,7 @@
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold text-slate-100 mb-1">Panel Pengawasan Akademik (Mata Dewa)</h3>
-                                <p class="text-sm text-slate-400">Pilih akun guru di bawah berdasarkan nama untuk meninjau jurnal harian lengkap serta mengirimkan catatan evaluasi.</p>
+                                <p class="text-sm text-slate-400">Pilih akun guru di bawah berdasarkan nama untuk meninjau jadwal, jurnal harian lengkap serta mengirimkan arahan evaluasi.</p>
                             </div>
                         </div>
                     </div>
@@ -706,8 +792,9 @@
                             <div id="guru-schedule-list" class="space-y-2 pt-2"></div>
                         </div>
 
+                        <!-- RIWAYAT JURNAL MENGAJAR BESERTA FILTER KELAS & TANGGAL -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                            <div class="flex justify-between items-center">
+                            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                                 <h3 class="text-base font-bold text-white"><i class="fa-solid fa-timeline text-indigo-400 mr-2"></i> Riwayat Jurnal Mengajar</h3>
                                 <div class="flex gap-2">
                                     <button onclick="window.exportJurnalPDF()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-lg shadow-rose-600/20">
@@ -718,9 +805,30 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- BILAH FILTER PRESISI: FILTER PER KELAS & RENTANG TANGGAL -->
+                            <div class="flex flex-wrap items-center gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                <span class="text-xs text-slate-400 font-medium flex items-center mr-1">
+                                    <i class="fa-solid fa-filter text-indigo-400 mr-1.5"></i> Filter:
+                                </span>
+                                <select id="filter-jurnal-kelas" onchange="window.setJurnalFilterKelas(this.value)" class="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-indigo-500">
+                                    <option value="">Semua Kelas</option>
+                                </select>
+                                <div class="flex items-center space-x-1.5 text-slate-400 text-xs">
+                                    <span class="text-[11px] text-slate-400">Dari:</span>
+                                    <input type="date" id="filter-jurnal-tanggal-mulai" onchange="window.setJurnalFilterTanggalMulai(this.value)" class="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500">
+                                    <span class="text-[11px] text-slate-400">s/d:</span>
+                                    <input type="date" id="filter-jurnal-tanggal-selesai" onchange="window.setJurnalFilterTanggalSelesai(this.value)" class="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-indigo-500">
+                                </div>
+                                <button onclick="window.resetJurnalFilter()" class="text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 transition flex items-center space-x-1" title="Reset Filter">
+                                    <i class="fa-solid fa-rotate-left"></i><span>Reset</span>
+                                </button>
+                            </div>
+
                             <div id="guru-jurnal-grid" class="space-y-3 pt-2"></div>
                         </div>
 
+                        <!-- MODAL FORM JURNAL MENGAJAR -->
                         <div id="jurnal-form-container" class="hidden bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 shadow-2xl transition">
                             <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
                                 <h3 class="text-base font-bold text-white"><i class="fa-solid fa-pen text-indigo-400 mr-2"></i> Form Jurnal Mengajar</h3>
@@ -756,7 +864,7 @@
                                 
                                 <div><label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Capaian</label><input type="text" id="j-capaian" required placeholder="Contoh: Pemahaman thullab secara umum sudah baik..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-indigo-500 placeholder-slate-500"></div>
                                 <div class="md:col-span-2"><label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Kendala</label><input type="text" id="j-kendala" required placeholder="Contoh: Ahmad Zaki mengantuk / Tidak ada kendala berarti" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-indigo-500 placeholder-slate-500"></div>
-                                <div class="md:col-span-2"><label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Tindak Lanjut</label><input type="text" id="j-tindak" required placeholder="Contoh: Remedial bagi siswa kurang / Pengayaan materi lanjutan..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-indigo-500 placeholder-slate-500"></div>
+                                <div class="md:col-span-2"><label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Tindak Lanjut</label><input type="text" id="j-tindak" required placeholder="Contoh: Remedial bagi siswa kurang / Pengayaan materi lanjutan..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-indigo-500 placeholder-slate-500"></textarea></div>
                                 <div class="md:col-span-2 flex justify-end space-x-3 pt-2">
                                     <button type="button" onclick="window.toggleJurnalForm()" class="bg-slate-800 px-5 py-2.5 rounded-xl text-xs font-medium">Batal</button>
                                     <button type="submit" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-xs font-medium">Simpan Jurnal</button>
@@ -765,6 +873,7 @@
                         </div>
                     </div>
 
+                    <!-- TAB REKAP NILAI HARIAN -->
                     <div id="content-tab-nilai" class="hidden space-y-6">
                         <div class="flex space-x-2 border-b border-slate-800 pb-3">
                             <button onclick="window.switchSubNilai('riwayat')" id="subtab-riwayat" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white">Riwayat Evaluasi Nilai</button>
@@ -824,6 +933,7 @@
                         </div>
                     </div>
 
+                    <!-- TAB OMNISCIENT GRADER -->
                     <div id="content-tab-grader" class="hidden space-y-6">
                         <div id="g-view-dashboard" class="space-y-4">
                             <div class="flex justify-between items-center bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
@@ -900,6 +1010,7 @@
                         </div>
                     </div>
 
+                    <!-- TAB CATATAN EVALUASI ADMIN -->
                     <div id="content-tab-evaluasi" class="hidden space-y-6">
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <h3 class="text-base font-bold text-white mb-2"><i class="fa-solid fa-envelope-open-text text-indigo-400 mr-2"></i> Catatan Kepala Madrasah / Admin</h3>
@@ -907,6 +1018,7 @@
                         </div>
                     </div>
 
+                    <!-- MODAL SKOR GRADER -->
                     <div id="grader-result-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
                         <div class="bg-slate-900 p-8 rounded-3xl max-w-sm w-full text-center border border-blue-500/30 shadow-2xl">
                             <h3 class="text-slate-400 font-bold mb-2 text-xs tracking-widest">NILAI AKHIR</h3>
@@ -922,6 +1034,7 @@
                         </div>
                     </div>
 
+                    <!-- MODAL STATISTIK GRAFIK UJIAN -->
                     <div id="exam-analytics-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
                         <div class="bg-slate-900 p-6 rounded-3xl max-w-lg w-full border border-purple-500/30 shadow-2xl space-y-4">
                             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -1003,7 +1116,7 @@
                     }
                     window.toggleJurnalForm();
                     loadGuruJournals();
-                    window.showToast('Jurnal tersimpan');
+                    window.showToast('Jurnal berhasil disimpan!');
                 } else {
                     try {
                         if (db) {
@@ -1051,7 +1164,7 @@
                     }
                     window.toggleGradesForm();
                     loadGuruGrades();
-                    window.showToast('Rekap tersimpan!');
+                    window.showToast('Rekap nilai tersimpan!');
                 } else {
                     try {
                         if (db) {
@@ -1183,6 +1296,97 @@
             }
         }
 
+        window.setJurnalFilterKelas = function(val) {
+            jurnalFilterKelas = val;
+            renderJournalsUI(cachedJournals);
+        };
+
+        window.setJurnalFilterTanggalMulai = function(val) {
+            jurnalFilterTanggalMulai = val;
+            renderJournalsUI(cachedJournals);
+        };
+
+        window.setJurnalFilterTanggalSelesai = function(val) {
+            jurnalFilterTanggalSelesai = val;
+            renderJournalsUI(cachedJournals);
+        };
+
+        window.resetJurnalFilter = function() {
+            jurnalFilterKelas = '';
+            jurnalFilterTanggalMulai = '';
+            jurnalFilterTanggalSelesai = '';
+            const kEl = document.getElementById('filter-jurnal-kelas');
+            const tmEl = document.getElementById('filter-jurnal-tanggal-mulai');
+            const tsEl = document.getElementById('filter-jurnal-tanggal-selesai');
+            if(kEl) kEl.value = '';
+            if(tmEl) tmEl.value = '';
+            if(tsEl) tsEl.value = '';
+            renderJournalsUI(cachedJournals);
+        };
+
+        function renderJournalsUI(journals) {
+            const container = document.getElementById('guru-jurnal-grid');
+            if(!container) return;
+
+            // Memperbarui opsi filter kelas secara otomatis
+            const selectKelas = document.getElementById('filter-jurnal-kelas');
+            if (selectKelas) {
+                const uniqueKelas = [...new Set(journals.map(j => j.kelas).filter(Boolean))].sort();
+                const curVal = selectKelas.value;
+                selectKelas.innerHTML = `<option value="">Semua Kelas</option>` + 
+                    uniqueKelas.map(k => `<option value="${k}" ${k === curVal ? 'selected' : ''}>${k}</option>`).join('');
+            }
+
+            // Menyaring dan mengurutkan secara kronologis (terbaru ke terlama)
+            let filtered = [...journals];
+            if (jurnalFilterKelas) {
+                filtered = filtered.filter(j => j.kelas === jurnalFilterKelas);
+            }
+            if (jurnalFilterTanggalMulai) {
+                filtered = filtered.filter(j => j.tanggal >= jurnalFilterTanggalMulai);
+            }
+            if (jurnalFilterTanggalSelesai) {
+                filtered = filtered.filter(j => j.tanggal <= jurnalFilterTanggalSelesai);
+            }
+
+            filtered.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic py-4 text-center">Tidak ada jurnal yang sesuai dengan kriteria filter.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(j => `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2 relative">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center space-x-2">
+                            ${j.kelas ? `<span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded border border-indigo-500/25 uppercase">${j.kelas}</span>` : ''}
+                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25 uppercase">${j.mapel}</span>
+                            <h4 class="text-sm font-bold text-white mt-1">${j.materi}</h4>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-slate-400">${j.tanggal} (${j.waktu})</span>
+                            <button onclick="window.editJurnal('${j.id}')" class="text-indigo-400 hover:text-indigo-300 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="window.deleteJurnal('${j.id}')" class="text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300"><strong>Tujuan:</strong> ${j.tujuan}</p>
+                    <p class="text-xs text-slate-300"><strong>Metode:</strong> ${j.metode} | Media: ${j.media}</p>
+                    <p class="text-xs text-slate-300"><strong>Kehadiran:</strong> ${j.kehadiran}</p>
+                    <p class="text-xs text-slate-300"><strong>Capaian:</strong> ${j.capaian}</p>
+                    <p class="text-xs text-rose-300"><strong>Kendala:</strong> ${j.kendala}</p>
+                    <p class="text-xs text-indigo-300"><strong>Tindak Lanjut:</strong> ${j.tindakLanjut}</p>
+                    
+                    ${j.adminNotes ? `
+                        <div class="mt-3 bg-blue-900/10 border border-blue-900/30 p-3 rounded-lg w-full">
+                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Catatan Admin</span>
+                            <p class="text-xs text-blue-100">${j.adminNotes}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
         function loadGuruEvaluations() {
             const c = document.getElementById('guru-eval-list');
             if(!c) return;
@@ -1214,44 +1418,6 @@
                         <span class="text-slate-400">${e.date}</span>
                     </div>
                     <p class="text-sm text-slate-200 bg-slate-900 p-3 rounded-lg border border-slate-800">${e.message}</p>
-                </div>
-            `).join('');
-        }
-
-        function renderJournalsUI(journals) {
-            const container = document.getElementById('guru-jurnal-grid');
-            if(!container) return;
-            if (journals.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada jurnal yang diisi.</p>`;
-                return;
-            }
-            container.innerHTML = journals.map(j => `
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2 relative">
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-center space-x-2">
-                            ${j.kelas ? `<span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded border border-indigo-500/25 uppercase">${j.kelas}</span>` : ''}
-                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25 uppercase">${j.mapel}</span>
-                            <h4 class="text-sm font-bold text-white mt-1">${j.materi}</h4>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs text-slate-400">${j.tanggal} (${j.waktu})</span>
-                            <button onclick="window.editJurnal('${j.id}')" class="text-indigo-400 hover:text-indigo-300 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="window.deleteJurnal('${j.id}')" class="text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </div>
-                    </div>
-                    <p class="text-xs text-slate-300"><strong>Tujuan:</strong> ${j.tujuan}</p>
-                    <p class="text-xs text-slate-300"><strong>Metode:</strong> ${j.metode} | Media: ${j.media}</p>
-                    <p class="text-xs text-slate-300"><strong>Kehadiran:</strong> ${j.kehadiran}</p>
-                    <p class="text-xs text-slate-300"><strong>Capaian:</strong> ${j.capaian}</p>
-                    <p class="text-xs text-rose-300"><strong>Kendala:</strong> ${j.kendala}</p>
-                    <p class="text-xs text-indigo-300"><strong>Tindak Lanjut:</strong> ${j.tindakLanjut}</p>
-                    
-                    ${j.adminNotes ? `
-                        <div class="mt-3 bg-blue-900/10 border border-blue-900/30 p-3 rounded-lg w-full">
-                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Catatan Admin</span>
-                            <p class="text-xs text-blue-100">${j.adminNotes}</p>
-                        </div>
-                    ` : ''}
                 </div>
             `).join('');
         }
@@ -1655,7 +1821,6 @@
         };
 
         window.deleteGraderExam = async function(id) {
-            if(!confirm('PERINGATAN: Yakin ingin menghapus kunci ujian ini? Data tidak bisa dikembalikan.')) return;
             if(is_preview) {
                 window.mockData.exams = window.mockData.exams.filter(e => e.id !== id);
                 loadGraderExamsData();
