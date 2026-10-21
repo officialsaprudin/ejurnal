@@ -1307,11 +1307,12 @@
 
             window.showToast('Membangun dokumen PDF matriks...', 'success');
             const opt = {
-                margin: 0.5,
+                margin: [0.4, 0.4, 0.4, 0.4],
                 filename: `Matriks_Nilai_${sel.value}_${new Date().toISOString().split('T')[0]}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0f172a', scrollY: 0 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
             html2pdf().set(opt).from(el).save().then(() => {
                 window.showToast('PDF Matriks berhasil diunduh!');
@@ -1891,51 +1892,123 @@
         };
 
         window.exportJurnalPDF = function() {
-            if (cachedJournals.length === 0) return window.showToast('Tidak ada jurnal untuk diekspor', 'error');
+            // Menyaring data sesuai filter kelas & rentang tanggal yang sedang aktif
+            let dataToExport = [...cachedJournals];
+            if (jurnalFilterKelas) {
+                dataToExport = dataToExport.filter(j => j.kelas === jurnalFilterKelas);
+            }
+            if (jurnalFilterTanggalMulai) {
+                dataToExport = dataToExport.filter(j => j.tanggal >= jurnalFilterTanggalMulai);
+            }
+            if (jurnalFilterTanggalSelesai) {
+                dataToExport = dataToExport.filter(j => j.tanggal <= jurnalFilterTanggalSelesai);
+            }
+
+            if (dataToExport.length === 0) return window.showToast('Tidak ada jurnal untuk diekspor', 'error');
             
-            window.showToast('Membangun dokumen PDF...', 'success');
+            window.showToast('Membangun dokumen PDF anti-potong...', 'success');
 
             const printElement = document.createElement('div');
             
+            let filterInfo = '';
+            if (jurnalFilterKelas || jurnalFilterTanggalMulai || jurnalFilterTanggalSelesai) {
+                filterInfo = `<p style="margin: 4px 0 0 0; color: #334155; font-size: 11px;">Filter: ${jurnalFilterKelas || 'Semua Kelas'} ${jurnalFilterTanggalMulai ? `| Dari: ${jurnalFilterTanggalMulai}` : ''} ${jurnalFilterTanggalSelesai ? `s/d ${jurnalFilterTanggalSelesai}` : ''}</p>`;
+            }
+
             let htmlContent = `
-                <div style="padding: 40px; font-family: sans-serif; color: black; background: white;">
-                    <div style="text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px;">
-                        <h2 style="margin: 0; color: #1e293b; font-size: 24px; text-transform: uppercase;">Riwayat Jurnal Mengajar</h2>
-                        <h4 style="margin: 10px 0 0 0; color: #475569; font-size: 16px;">Pengajar: ${currentUser.name || currentUser.email}</h4>
-                        <p style="margin: 5px 0 0 0; color: #64748b; font-size: 12px;">Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</p>
+                <div style="width: 100%; max-width: 700px; margin: 0 auto; padding: 15px 20px; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #ffffff; box-sizing: border-box;">
+                    <style>
+                        .pdf-card {
+                            border: 1px solid #94a3b8;
+                            border-radius: 8px;
+                            padding: 14px 16px;
+                            margin-bottom: 14px;
+                            background-color: #f8fafc;
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                            display: block;
+                            box-sizing: border-box;
+                        }
+                        .pdf-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 11.5px;
+                            line-height: 1.45;
+                        }
+                        .pdf-table td {
+                            padding: 3px 0;
+                            vertical-align: top;
+                            word-wrap: break-word;
+                            overflow-wrap: break-word;
+                        }
+                    </style>
+                    <div style="text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 12px; margin-bottom: 18px; page-break-inside: avoid; break-inside: avoid;">
+                        <h2 style="margin: 0; color: #0f172a; font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">REKAPITULASI JURNAL MENGAJAR</h2>
+                        <h4 style="margin: 6px 0 0 0; color: #334155; font-size: 13px; font-weight: bold;">Guru: ${currentUser.name || currentUser.email}</h4>
+                        ${filterInfo}
+                        <p style="margin: 4px 0 0 0; color: #64748b; font-size: 10.5px;">Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</p>
                     </div>
             `;
 
-            cachedJournals.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).forEach(j => {
+            dataToExport.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).forEach(j => {
                 htmlContent += `
-                    <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; margin-bottom: 20px; page-break-inside: avoid; background-color: #f8fafc;">
-                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
-                            <div>
-                                <span style="background-color: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;">${j.mapel}</span>
-                                ${j.kelas ? `<span style="background-color: #e0e7ff; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-left: 5px;">${j.kelas}</span>` : ''}
-                                <h3 style="margin: 10px 0 0 0; font-size: 16px; color: #0f172a;">${j.materi}</h3>
-                            </div>
-                            <div style="text-align: right; color: #64748b; font-size: 12px; font-weight: bold;">
-                                ${j.tanggal}<br>${j.waktu}
-                            </div>
-                        </div>
-                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <div class="pdf-card">
+                        <table style="width: 100%; border-collapse: collapse; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 10px;">
+                            <tr>
+                                <td style="vertical-align: top; padding-bottom: 6px;">
+                                    <div style="font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 2px;">${j.materi || '-'}</div>
+                                </td>
+                                <td style="vertical-align: top; text-align: right; white-space: nowrap; width: 150px; padding-bottom: 6px;">
+                                    <span style="color: #475569; font-size: 11px; font-weight: bold;">${j.tanggal || ''} (${j.waktu || ''})</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="pdf-table">
                             <tbody>
-                                <tr><td style="padding: 4px 0; width: 120px; vertical-align: top;"><b>Tujuan Pembelajaran</b></td><td style="padding: 4px 0;">: ${j.tujuan}</td></tr>
-                                <tr><td style="padding: 4px 0; vertical-align: top;"><b>Metode & Media</b></td><td style="padding: 4px 0;">: ${j.metode} | ${j.media}</td></tr>
-                                <tr><td style="padding: 4px 0; vertical-align: top;"><b>Kehadiran</b></td><td style="padding: 4px 0;">: ${j.kehadiran}</td></tr>
-                                <tr><td style="padding: 4px 0; vertical-align: top;"><b>Capaian</b></td><td style="padding: 4px 0;">: ${j.capaian}</td></tr>
-                                <tr><td style="padding: 4px 0; vertical-align: top;"><b style="color: #b91c1c;">Kendala</b></td><td style="padding: 4px 0; color: #b91c1c;">: ${j.kendala}</td></tr>
-                                <tr><td style="padding: 4px 0; vertical-align: top;"><b style="color: #1d4ed8;">Tindak Lanjut</b></td><td style="padding: 4px 0; color: #1d4ed8;">: ${j.tindakLanjut}</td></tr>
+                                <tr>
+                                    <td style="width: 130px; font-weight: bold; color: #1e293b;">Kelas / Mapel</td>
+                                    <td style="width: 10px; font-weight: bold;">:</td>
+                                    <td style="color: #0f172a; font-weight: 600;">${j.kelas || '-'} / ${j.mapel || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold; color: #1e293b;">Tujuan</td>
+                                    <td style="font-weight: bold;">:</td>
+                                    <td style="color: #1e293b;">${j.tujuan || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold; color: #1e293b;">Metode & Media</td>
+                                    <td style="font-weight: bold;">:</td>
+                                    <td style="color: #1e293b;">${j.metode || '-'} | ${j.media || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold; color: #1e293b;">Kehadiran</td>
+                                    <td style="font-weight: bold;">:</td>
+                                    <td style="color: #1e293b;">${j.kehadiran || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold; color: #1e293b;">Capaian</td>
+                                    <td style="font-weight: bold;">:</td>
+                                    <td style="color: #1e293b;">${j.capaian || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold; color: #b91c1c;">Kendala</td>
+                                    <td style="font-weight: bold; color: #b91c1c;">:</td>
+                                    <td style="color: #b91c1c;">${j.kendala || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold; color: #1d4ed8;">Tindak Lanjut</td>
+                                    <td style="font-weight: bold; color: #1d4ed8;">:</td>
+                                    <td style="color: #1d4ed8;">${j.tindakLanjut || '-'}</td>
+                                </tr>
                             </tbody>
                         </table>
                 `;
 
                 if (j.adminNotes) {
                     htmlContent += `
-                        <div style="margin-top: 15px; padding: 12px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px;">
-                            <strong style="color: #1e40af; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">Catatan Kepala Madrasah / Admin:</strong>
-                            <p style="margin: 0; font-size: 12px; color: #1e3a8a; font-style: italic;">"${j.adminNotes}"</p>
+                        <div style="margin-top: 10px; padding: 8px 12px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; page-break-inside: avoid; break-inside: avoid;">
+                            <strong style="color: #1e40af; font-size: 10.5px; text-transform: uppercase; display: block; margin-bottom: 2px;">Catatan Admin / Kamad:</strong>
+                            <p style="margin: 0; font-size: 11px; color: #1e3a8a; font-style: italic;">"${j.adminNotes}"</p>
                         </div>
                     `;
                 }
@@ -1947,15 +2020,16 @@
             printElement.innerHTML = htmlContent;
 
             const opt = {
-                margin:       0.5,
-                filename:     `Jurnal_Mengajar_${currentUser.name || 'Guru'}_${new Date().toISOString().split('T')[0]}.pdf`,
+                margin:       [0.4, 0.4, 0.4, 0.4],
+                filename:     `Jurnal_Mengajar_${(currentUser.name || 'Guru').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, backgroundColor: '#ffffff' },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
             html2pdf().set(opt).from(printElement).save().then(() => {
-                window.showToast('Dokumen berhasil diunduh (PDF)!', 'success');
+                window.showToast('Dokumen PDF berhasil diunduh dengan rapi!', 'success');
             });
         };
 
