@@ -3613,7 +3613,7 @@
             }
         };
 
-        window.exportJurnalWord = function() {
+        window.exportJurnalWord = async function() {
             let dataToExport = [...cachedJournals];
             if (jurnalFilterKelas) {
                 dataToExport = dataToExport.filter(j => j.kelas === jurnalFilterKelas);
@@ -3688,6 +3688,66 @@
             const madW = parseInt(schoolSettings.logoMadrasahWidth) || 65;
             const guruSig = window.getGuruSignature();
             const kamadSig = window.getKamadSignature();
+
+            // Fungsi kalkulasi ukuran gambar proporsional agar QR Code/Barcode tidak gepeng/terdistorsi di Word
+            const getAutoFitImageAttrs = (imgSrc, maxW = 120, maxH = 58) => {
+                if (!imgSrc) return Promise.resolve({ width: 0, height: 0, html: '' });
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    let done = false;
+                    const timer = setTimeout(() => {
+                        if (!done) {
+                            done = true;
+                            resolve({
+                                width: 60,
+                                height: 60,
+                                html: `<img src="${imgSrc}" width="60" height="60" style="width: 60px; height: 60px; margin: 0 auto; display: block;" alt="TTD">`
+                            });
+                        }
+                    }, 400);
+
+                    img.onload = () => {
+                        if (done) return;
+                        done = true;
+                        clearTimeout(timer);
+                        const nw = img.naturalWidth || img.width || 100;
+                        const nh = img.naturalHeight || img.height || 60;
+                        const isSquare = Math.abs(nw - nh) / Math.max(nw, nh) < 0.25;
+                        let finalW, finalH;
+                        if (isSquare) {
+                            // QR Code / Barcode Kotak: Kunci ukuran bujur sangkar asli
+                            const size = Math.min(maxH, 60);
+                            finalW = size;
+                            finalH = size;
+                        } else {
+                            // TTD Basah horizontal: Skala proporsional
+                            const scale = Math.min(maxW / nw, maxH / nh, 1);
+                            finalW = Math.max(20, Math.round(nw * scale));
+                            finalH = Math.max(20, Math.round(nh * scale));
+                        }
+                        const html = `<img src="${imgSrc}" width="${finalW}" height="${finalH}" style="width: ${finalW}px; height: ${finalH}px; max-width: ${finalW}px; max-height: ${finalH}px; object-fit: contain; margin: 0 auto; display: block;" alt="TTD">`;
+                        resolve({ width: finalW, height: finalH, html });
+                    };
+
+                    img.onerror = () => {
+                        if (done) return;
+                        done = true;
+                        clearTimeout(timer);
+                        resolve({
+                            width: 60,
+                            height: 60,
+                            html: `<img src="${imgSrc}" width="60" height="60" style="width: 60px; height: 60px; margin: 0 auto; display: block;" alt="TTD">`
+                        });
+                    };
+
+                    img.src = imgSrc;
+                });
+            };
+
+            const [guruSigResult, kamadSigResult] = await Promise.all([
+                getAutoFitImageAttrs(guruSig, 120, 58),
+                getAutoFitImageAttrs(kamadSig, 120, 58)
+            ]);
 
             const tableRowsHTML = sortedDates.map((tgl, dIdx) => {
                 const sessions = groupedByDate[tgl];
@@ -3845,30 +3905,36 @@
                             </tbody>
                         </table>
 
-                        <!-- BLOK TANDA TANGAN 2-BARIS DENGAN GAMBAR TTD / BARCODE (PNG) -->
+                        <!-- BLOK TANDA TANGAN PROPORSIONAL DENGAN GAMBAR TTD / BARCODE (PNG) -->
                         <table border="0" cellspacing="0" cellpadding="0" style="width: 100%; border-collapse: collapse; margin-top: 20pt; border: none; font-size: 10pt; font-family: Arial, sans-serif;">
                             <tr>
-                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-bottom: 0;">
+                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-bottom: 2pt;">
                                     <p style="margin: 0; line-height: 1.3;">&nbsp;</p>
                                     <p style="margin: 0; line-height: 1.3;">&nbsp;</p>
                                     <p style="margin: 0; line-height: 1.3; font-weight: normal;">Guru Mapel,</p>
                                 </td>
-                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-bottom: 0;">
+                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-bottom: 2pt;">
                                     <p style="margin: 0; line-height: 1.3;">Mengetahui,</p>
                                     <p style="margin: 0; line-height: 1.3;">${docCity}, ${todayIndo}</p>
                                     <p style="margin: 0; line-height: 1.3; font-weight: normal;">Kepala Madrasah,</p>
                                 </td>
                             </tr>
-                            <tr>
-                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-top: 5pt; height: 50pt;">
-                                    ${guruSig ? `<img src="${guruSig}" width="110" height="55" style="width: 110px; height: 55px; max-height: 55px; max-width: 120px; object-fit: contain; margin: 0 auto; display: block;" alt="TTD Guru"><br>` : `<div style="height: 45pt;">&nbsp;</div>`}
-                                    <p style="margin: 0; font-weight: bold; text-decoration: underline;">${teacherName}</p>
-                                    <p style="margin: 2pt 0 0 0; font-size: 9pt; color: transparent; user-select: none;">&nbsp;</p>
+                            <tr style="height: 55pt;">
+                                <td style="width: 50%; height: 55pt; text-align: center; vertical-align: middle; border: none; padding: 2pt 0;">
+                                    ${guruSigResult.html || `<div style="height: 50pt;">&nbsp;</div>`}
                                 </td>
-                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-top: 5pt; height: 50pt;">
-                                    ${kamadSig ? `<img src="${kamadSig}" width="110" height="55" style="width: 110px; height: 55px; max-height: 55px; max-width: 120px; object-fit: contain; margin: 0 auto; display: block;" alt="TTD Kamad"><br>` : `<div style="height: 45pt;">&nbsp;</div>`}
-                                    <p style="margin: 0; font-weight: bold; text-decoration: underline;">${kamadName}</p>
-                                    ${kamadNip && kamadNip !== 'NIP. -' ? `<p style="margin: 2pt 0 0 0; font-size: 9pt; color: #475569;">${kamadNip}</p>` : `<p style="margin: 2pt 0 0 0; font-size: 9pt; color: transparent; user-select: none;">&nbsp;</p>`}
+                                <td style="width: 50%; height: 55pt; text-align: center; vertical-align: middle; border: none; padding: 2pt 0;">
+                                    ${kamadSigResult.html || `<div style="height: 50pt;">&nbsp;</div>`}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 50%; text-align: center; vertical-align: top; border: none; padding-top: 3pt;">
+                                    <p style="margin: 0; font-weight: bold; text-decoration: underline; font-size: 10pt;">${teacherName}</p>
+                                    <p style="margin: 2pt 0 0 0; font-size: 9pt; color: #ffffff; user-select: none;">&nbsp;</p>
+                                </td>
+                                <td style="width: 50%; text-align: center; vertical-align: top; border: none; padding-top: 3pt;">
+                                    <p style="margin: 0; font-weight: bold; text-decoration: underline; font-size: 10pt;">${kamadName}</p>
+                                    ${kamadNip && kamadNip !== 'NIP. -' ? `<p style="margin: 2pt 0 0 0; font-size: 9pt; color: #475569;">${kamadNip}</p>` : `<p style="margin: 2pt 0 0 0; font-size: 9pt; color: #ffffff; user-select: none;">&nbsp;</p>`}
                                 </td>
                             </tr>
                         </table>
