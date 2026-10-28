@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EJURNAL-Portal Akademik & Omniscient Grader</title>
+    <title>EJURNAL - Portal Akademik & Omniscient Grader</title>
 	<link rel="icon" type="image/png" href="https://i.ibb.co.com/676xL3yn/MI-AL-IRSYAD-AL-ISLAMIYYAH-20260604-173251-0000.png">
+	
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -1500,6 +1501,29 @@
             window.showToast('TTD Kamad dibersihkan.', 'info');
         };
 
+        // Fungsi Deteksi Otomatis Titik Koordinat GPS Admin Saat Berada di Madrasah
+        window.getAdminCurrentLocation = function() {
+            if (!navigator.geolocation) {
+                return window.showToast('Peramban ini tidak mendukung Geolocation.', 'error');
+            }
+            window.showToast('Mendeteksi titik koordinat GPS perangkat Anda...', 'info');
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const latInput = document.getElementById('cfg-school-lat');
+                    const lngInput = document.getElementById('cfg-school-lng');
+                    if (latInput) latInput.value = lat.toFixed(6);
+                    if (lngInput) lngInput.value = lng.toFixed(6);
+                    window.showToast(`Koordinat GPS berhasil terdeteksi: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+                },
+                (err) => {
+                    window.showToast(`Gagal mendeteksi lokasi (${err.message}). Anda bisa memasukkan koordinat manual dari Google Maps.`, 'error');
+                },
+                { enableHighAccuracy: true, timeout: 8000 }
+            );
+        };
+
         window.saveSchoolSettings = async function(e) {
             e.preventDefault();
             const name = document.getElementById('cfg-school-name').value.trim();
@@ -1513,6 +1537,21 @@
             const logoMadrasahUrl = document.getElementById('cfg-logo-madrasah-url').value.trim();
             const logoMadrasahWidth = parseInt(document.getElementById('cfg-logo-madrasah-width').value) || 65;
             const kamadSigUrl = document.getElementById('cfg-kamad-sig-url') ? document.getElementById('cfg-kamad-sig-url').value.trim() : schoolSettings.headmasterSignatureUrl;
+
+            // Pengaturan Lokasi Geofencing GPS & Jam Kerja
+            const latInput = document.getElementById('cfg-school-lat');
+            const lngInput = document.getElementById('cfg-school-lng');
+            const radiusInput = document.getElementById('cfg-school-radius');
+            const clockInInput = document.getElementById('cfg-clockin-limit');
+            const lateTolInput = document.getElementById('cfg-late-tolerance');
+            const clockOutInput = document.getElementById('cfg-clockout-min');
+
+            if (latInput && !isNaN(parseFloat(latInput.value))) schoolSettings.lat = parseFloat(latInput.value);
+            if (lngInput && !isNaN(parseFloat(lngInput.value))) schoolSettings.lng = parseFloat(lngInput.value);
+            if (radiusInput && !isNaN(parseInt(radiusInput.value))) schoolSettings.radius = parseInt(radiusInput.value);
+            if (clockInInput && clockInInput.value) schoolSettings.clockInLimit = clockInInput.value;
+            if (lateTolInput && !isNaN(parseInt(lateTolInput.value))) schoolSettings.lateTolerance = parseInt(lateTolInput.value);
+            if (clockOutInput && clockOutInput.value) schoolSettings.clockOutMin = clockOutInput.value;
 
             schoolSettings.name = name || 'MI Al-Irsyad Al-Islamiyyah Banjarmasin';
             schoolSettings.city = city || 'Banjarmasin';
@@ -1537,7 +1576,7 @@
             }
 
             window.toggleAdminSettingsModal();
-            window.showToast('Pengaturan TTD, KOP, Logo & TTD Kamad berhasil disimpan!', 'success');
+            window.showToast('Pengaturan Lokasi GPS, Radius, Jam Kerja & KOP berhasil disimpan!', 'success');
             renderMainDashboard();
         };
 
@@ -1556,21 +1595,21 @@
                                 </div>
                             </div>
                             <button onclick="window.toggleAdminSettingsModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-indigo-600/20 shrink-0">
-                                <i class="fa-solid fa-file-signature"></i>
-                                <span>Pengaturan TTD & KOP</span>
+                                <i class="fa-solid fa-sliders"></i>
+                                <span>Pengaturan KOP, TTD & Lokasi GPS</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- MODAL FORM PENGATURAN TTD & KOP MADRASAH -->
+                    <!-- MODAL FORM PENGATURAN TTD, KOP, LOGO & LOKASI GEOFENCING MADRASAH -->
                     <div id="admin-settings-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-xl w-full shadow-2xl relative space-y-4 max-h-[92vh] overflow-y-auto">
                             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                                 <div>
                                     <h3 class="text-base font-bold text-white flex items-center gap-2">
-                                        <i class="fa-solid fa-file-signature text-indigo-400"></i> Pengaturan TTD, KOP & Logo
+                                        <i class="fa-solid fa-sliders text-indigo-400"></i> Pengaturan Madrasah & Lokasi GPS
                                     </h3>
-                                    <p class="text-xs text-slate-400 mt-0.5">Atur logo instansi (kiri), logo madrasah (kanan), scaling ukuran, dan pengesahan.</p>
+                                    <p class="text-xs text-slate-400 mt-0.5">Konfigurasi titik lokasi geofencing presensi, radius meter, jam kerja, logo dan KOP surat.</p>
                                 </div>
                                 <button onclick="window.toggleAdminSettingsModal()" class="text-slate-400 hover:text-white p-1">
                                     <i class="fa-solid fa-xmark text-lg"></i>
@@ -1578,6 +1617,55 @@
                             </div>
 
                             <form onsubmit="window.saveSchoolSettings(event)" class="space-y-4 text-xs">
+                                
+                                <!-- PENGATURAN TITIK LOKASI GEOFENCING & RADIUS MADRASAH (BARU) -->
+                                <div class="bg-slate-950 p-4 rounded-2xl border border-indigo-500/30 space-y-3">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+                                        <div>
+                                            <span class="text-[11px] font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                                                <i class="fa-solid fa-location-crosshairs text-xs"></i> Titik Koordinat & Radius Geofencing Presensi
+                                            </span>
+                                            <p class="text-[10px] text-slate-400 mt-0.5">Titik patokan pusat madrasah untuk mengukur jarak guru saat melakukan presensi.</p>
+                                        </div>
+                                        <button type="button" onclick="window.getAdminCurrentLocation()" class="px-2.5 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 font-bold text-[10px] flex items-center gap-1.5 shrink-0 transition" title="Gunakan koordinat GPS Anda saat berada di lokasi madrasah">
+                                            <i class="fa-solid fa-crosshairs"></i>
+                                            <span>Ambil Koordinat Saya</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                        <div>
+                                            <label class="block font-bold text-slate-300 uppercase mb-1">Latitude (Lintang)</label>
+                                            <input type="number" step="any" id="cfg-school-lat" value="${schoolSettings.lat || -3.319400}" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 font-mono text-white text-xs outline-none focus:border-indigo-500" placeholder="-3.319400">
+                                        </div>
+                                        <div>
+                                            <label class="block font-bold text-slate-300 uppercase mb-1">Longitude (Bujur)</label>
+                                            <input type="number" step="any" id="cfg-school-lng" value="${schoolSettings.lng || 114.590700}" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 font-mono text-white text-xs outline-none focus:border-indigo-500" placeholder="114.590700">
+                                        </div>
+                                        <div>
+                                            <label class="block font-bold text-slate-300 uppercase mb-1">Radius Izin (Meter)</label>
+                                            <input type="number" min="10" max="2000" id="cfg-school-radius" value="${schoolSettings.radius || 100}" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 font-mono font-bold text-emerald-400 text-xs outline-none focus:border-indigo-500" placeholder="100">
+                                        </div>
+                                    </div>
+
+                                    <!-- Pengaturan Jam Kerja Presensi -->
+                                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                        <div>
+                                            <label class="block font-semibold text-slate-400 text-[10px] uppercase mb-1">Batas Jam Masuk</label>
+                                            <input type="text" id="cfg-clockin-limit" value="${schoolSettings.clockInLimit || '07:15'}" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 font-mono text-white text-xs outline-none focus:border-indigo-500" placeholder="07:15">
+                                        </div>
+                                        <div>
+                                            <label class="block font-semibold text-slate-400 text-[10px] uppercase mb-1">Toleransi (Menit)</label>
+                                            <input type="number" min="0" max="60" id="cfg-late-tolerance" value="${schoolSettings.lateTolerance || 15}" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 font-mono text-amber-400 text-xs outline-none focus:border-indigo-500" placeholder="15">
+                                        </div>
+                                        <div>
+                                            <label class="block font-semibold text-slate-400 text-[10px] uppercase mb-1">Jam Pulang Minimal</label>
+                                            <input type="text" id="cfg-clockout-min" value="${schoolSettings.clockOutMin || '14:30'}" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 font-mono text-indigo-300 text-xs outline-none focus:border-indigo-500" placeholder="14:30">
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] text-slate-500 italic">Guru yang melakukan presensi di luar radius meter tersebut otomatis tertolak oleh sistem.</p>
+                                </div>
+
                                 <!-- PENGATURAN LOGO KIRI (PEMERINTAH) & LOGO KANAN (MADRASAH) DENGAN SCALING -->
                                 <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
                                     <span class="text-[11px] font-bold text-indigo-400 uppercase tracking-wider block flex items-center gap-1.5">
