@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Akademik & Omniscient Grader</title>
-    <link rel="icon" type="image/png" href="MI.png">
+    <title>EJURNAL-Portal Akademik & Omniscient Grader</title>
+	<link rel="icon" type="image/png" href="https://i.ibb.co.com/676xL3yn/MI-AL-IRSYAD-AL-ISLAMIYYAH-20260604-173251-0000.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- html2pdf.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SheetJS (xlsx) CDN untuk Ekspor Excel (.xlsx) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Google Fonts Inter -->
@@ -25,6 +27,234 @@
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--scrollbar-track, #0f172a); }
         ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 4px; }
+
+        /* ================= TATA TEMA TERANG LENGKAP & KONTRASTING (LIGHT MODE) ================= */
+        html:not(.dark) {
+            --scrollbar-track: #f1f5f9;
+        }
+        html:not(.dark) body {
+            background-color: #f8fafc !important;
+            color: #1e293b !important;
+        }
+
+        /* Bilah Navigasi Atas */
+        html:not(.dark) nav {
+            background-color: #ffffff !important;
+            border-bottom-color: #e2e8f0 !important;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+        }
+        html:not(.dark) nav span.text-white,
+        html:not(.dark) nav .text-slate-300,
+        html:not(.dark) nav .text-slate-100 {
+            color: #0f172a !important;
+        }
+
+        /* Kartu Utama, Panel, & Kontainer */
+        html:not(.dark) .bg-slate-900:not(button):not(.nav-accent-btn) {
+            background-color: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            color: #1e293b !important;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04);
+        }
+
+        /* Sub-panel Dalam, Kotak Jadwal, & Bilah Filter */
+        html:not(.dark) .bg-slate-950 {
+            background-color: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+            color: #1e293b !important;
+        }
+        html:not(.dark) .border-slate-800,
+        html:not(.dark) .border-slate-700 {
+            border-color: #e2e8f0 !important;
+        }
+
+        /* Form Input, Dropdown Select, & Textarea */
+        html:not(.dark) input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+        html:not(.dark) select,
+        html:not(.dark) textarea {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        html:not(.dark) input::placeholder,
+        html:not(.dark) textarea::placeholder {
+            color: #94a3b8 !important;
+        }
+        html:not(.dark) input:focus,
+        html:not(.dark) select:focus,
+        html:not(.dark) textarea:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15) !important;
+        }
+
+        /* Tipografi: Judul & Sub-judul */
+        html:not(.dark) h1,
+        html:not(.dark) h2,
+        html:not(.dark) h3,
+        html:not(.dark) h4,
+        html:not(.dark) h5,
+        html:not(.dark) h6 {
+            color: #0f172a !important;
+        }
+        html:not(.dark) .text-white {
+            color: #0f172a !important;
+        }
+        html:not(.dark) .text-slate-100,
+        html:not(.dark) .text-slate-200 {
+            color: #1e293b !important;
+        }
+        html:not(.dark) .text-slate-300 {
+            color: #334155 !important;
+        }
+        html:not(.dark) .text-slate-400 {
+            color: #64748b !important;
+        }
+        html:not(.dark) .text-slate-500 {
+            color: #64748b !important;
+        }
+
+        /* Lindungi Teks Putih pada Tombol Aksen & Badge Berwarna */
+        html:not(.dark) button.bg-indigo-600,
+        html:not(.dark) button.bg-indigo-500,
+        html:not(.dark) button.bg-blue-600,
+        html:not(.dark) button.bg-blue-500,
+        html:not(.dark) button.bg-emerald-600,
+        html:not(.dark) button.bg-emerald-500,
+        html:not(.dark) button.bg-rose-600,
+        html:not(.dark) button.bg-rose-500,
+        html:not(.dark) button.bg-purple-600,
+        html:not(.dark) button.bg-purple-500,
+        html:not(.dark) .bg-indigo-600,
+        html:not(.dark) .bg-blue-600,
+        html:not(.dark) .bg-emerald-600,
+        html:not(.dark) .bg-rose-600,
+        html:not(.dark) .bg-purple-600,
+        html:not(.dark) [class*="bg-indigo-600"] *,
+        html:not(.dark) [class*="bg-blue-600"] *,
+        html:not(.dark) [class*="bg-emerald-600"] *,
+        html:not(.dark) [class*="bg-rose-600"] *,
+        html:not(.dark) [class*="bg-purple-600"] * {
+            color: #ffffff !important;
+        }
+
+        /* Penyesuaian Teks Berwarna agar Tajam (Kontras Tinggi) di Mode Terang */
+        html:not(.dark) .text-emerald-400,
+        html:not(.dark) .text-emerald-300 {
+            color: #047857 !important;
+        }
+        html:not(.dark) .text-indigo-400,
+        html:not(.dark) .text-indigo-300 {
+            color: #4338ca !important;
+        }
+        html:not(.dark) .text-blue-400,
+        html:not(.dark) .text-blue-300 {
+            color: #1d4ed8 !important;
+        }
+        html:not(.dark) .text-rose-400,
+        html:not(.dark) .text-rose-300 {
+            color: #be123c !important;
+        }
+        html:not(.dark) .text-amber-400,
+        html:not(.dark) .text-amber-300 {
+            color: #b45309 !important;
+        }
+        html:not(.dark) .text-purple-400,
+        html:not(.dark) .text-purple-300 {
+            color: #7e22ce !important;
+        }
+
+        /* Tab Non-aktif & Tombol Berlatar Belakang Slate */
+        html:not(.dark) button.bg-slate-900,
+        html:not(.dark) button.bg-slate-800,
+        html:not(.dark) a.bg-slate-900,
+        html:not(.dark) a.bg-slate-800 {
+            background-color: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #475569 !important;
+        }
+        html:not(.dark) button.bg-slate-900:hover,
+        html:not(.dark) button.bg-slate-800:hover {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+
+        /* Highlight Jadwal Hari Ini di Mode Terang */
+        html:not(.dark) .bg-indigo-950\/60 {
+            background-color: #eef2ff !important;
+            border-color: #818cf8 !important;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1) !important;
+        }
+
+        /* Modal & Dialog Popup */
+        html:not(.dark) #admin-settings-modal > div,
+        html:not(.dark) #guru-signature-modal > div,
+        html:not(.dark) #jurnal-form-container,
+        html:not(.dark) #grades-form-container,
+        html:not(.dark) #grader-result-modal > div,
+        html:not(.dark) #exam-analytics-modal > div {
+            background-color: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15) !important;
+        }
+
+        /* Tabel & Garis Pemisah */
+        html:not(.dark) table thead {
+            background-color: #f1f5f9 !important;
+            color: #334155 !important;
+        }
+        html:not(.dark) table th,
+        html:not(.dark) table td {
+            border-color: #e2e8f0 !important;
+        }
+        html:not(.dark) table tbody tr:hover {
+            background-color: #f8fafc !important;
+        }
+        html:not(.dark) .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+        html:not(.dark) .divide-slate-800\/50 > :not([hidden]) ~ :not([hidden]) {
+            border-color: #e2e8f0 !important;
+        }
+
+        /* Balon Catatan & Reaksi */
+        html:not(.dark) .bg-slate-900\/80,
+        html:not(.dark) .bg-slate-950\/60,
+        html:not(.dark) .bg-slate-950\/80 {
+            background-color: #f1f5f9 !important;
+            border-color: #e2e8f0 !important;
+            color: #1e293b !important;
+        }
+
+        /* Badge Status Khusus */
+        html:not(.dark) .bg-indigo-900\/20,
+        html:not(.dark) .bg-indigo-900\/30 {
+            background-color: #eef2ff !important;
+            border-color: #c7d2fe !important;
+            color: #4338ca !important;
+        }
+        html:not(.dark) .bg-emerald-900\/20,
+        html:not(.dark) .bg-emerald-900\/30 {
+            background-color: #ecfdf5 !important;
+            border-color: #a7f3d0 !important;
+            color: #047857 !important;
+        }
+        html:not(.dark) .bg-amber-900\/20,
+        html:not(.dark) .bg-amber-900\/30 {
+            background-color: #fffbeb !important;
+            border-color: #fde68a !important;
+            color: #b45309 !important;
+        }
+        html:not(.dark) .bg-rose-900\/20,
+        html:not(.dark) .bg-rose-900\/30 {
+            background-color: #fff1f2 !important;
+            border-color: #fecdd3 !important;
+            color: #be123c !important;
+        }
+        html:not(.dark) .bg-blue-900\/10,
+        html:not(.dark) .bg-blue-900\/20,
+        html:not(.dark) .bg-blue-900\/30 {
+            background-color: #eff6ff !important;
+            border-color: #bfdbfe !important;
+            color: #1d4ed8 !important;
+        }
     </style>
 </head>
 <body class="h-full bg-slate-950 dark:bg-slate-950 text-slate-100 dark:text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200" id="body-root">
@@ -88,7 +318,35 @@
                     reply: '',
                     readAt: ''
                 }
-            ]
+            ],
+            attendances: [
+                { id: 'att_1', userId: 'mock-guru-id', date: '2026-10-24', clockIn: '07:05', clockOut: null, status: 'HADIR', lateMinutes: 0, distance: 16, notes: 'Tepat waktu sesuai jadwal' },
+                { id: 'att_2', userId: 'mock-guru-id', date: '2026-10-23', clockIn: '07:12', clockOut: '14:32', status: 'HADIR', lateMinutes: 0, distance: 20, notes: 'Presensi lengkap' },
+                { id: 'att_3', userId: 'mock-guru-id', date: '2026-10-22', clockIn: '07:38', clockOut: '14:30', status: 'TERLAMBAT', lateMinutes: 23, distance: 25, notes: 'Terlambat 23 menit' }
+            ],
+            leaves: [
+                { id: 'lv_1', userId: 'mock-guru-id', teacherName: 'Saprudin, S.Ag', type: 'DINAS LUAR', startDate: '2026-10-20', endDate: '2026-10-20', reason: 'Pelatihan Kurikulum Kemenag Kota Banjarmasin', status: 'APPROVED', createdAt: '2026-10-19' },
+                { id: 'lv_2', userId: 'mock-guru-id', teacherName: 'Saprudin, S.Ag', type: 'SAKIT', startDate: '2026-10-27', endDate: '2026-10-27', reason: 'Pemeriksaan kesehatan rutin dokter', status: 'PENDING', createdAt: '2026-10-24' }
+            ],
+            schoolSettings: {
+                name: 'MI Al-Irsyad Al-Islamiyyah Banjarmasin',
+                lat: -3.319400,
+                lng: 114.590700,
+                radius: 100,
+                clockInLimit: '07:15',
+                lateTolerance: 15,
+                clockOutMin: '14:30',
+                headmasterName: 'H. Ahmad Fauzi, S.Pd.I',
+                headmasterNip: '19780512 200501 1 003',
+                city: 'Banjarmasin',
+                kopInstansi: 'KEMENTERIAN AGAMA REPUBLIK INDONESIA\nKANTOR KEMENTERIAN AGAMA KOTA BANJARMASIN',
+                kopAlamat: 'Jl. Pangeran Samudera No. 44, Kertak Baru Ulu, Kec. Banjarmasin Tengah, Kota Banjarmasin',
+                logoGovUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/9a/Kementerian_Agama_new_logo.png',
+                logoGovWidth: 65,
+                logoMadrasahUrl: 'https://iili.io/CQPsxMQ.md.png',
+                logoMadrasahWidth: 65,
+                headmasterSignatureUrl: ''
+            }
         };
 
         const firebaseConfig = {
@@ -122,6 +380,39 @@
         let currentExamId = null;
         let editorQuestions = [];
 
+        // State Modul Presensi & Geofencing GPS
+        let cachedAttendances = [];
+        let cachedLeaves = [];
+        let adminCachedAttendances = [];
+        let adminCachedLeaves = [];
+        let schoolSettings = {
+            name: 'MI Al-Irsyad Al-Islamiyyah Banjarmasin',
+            lat: -3.319400,
+            lng: 114.590700,
+            radius: 100,
+            clockInLimit: '07:15',
+            lateTolerance: 15,
+            clockOutMin: '14:30',
+            headmasterName: 'H. Ahmad Fauzi, S.Pd.I',
+            headmasterNip: '19780512 200501 1 003',
+            city: 'Banjarmasin',
+            kopInstansi: 'KEMENTERIAN AGAMA REPUBLIK INDONESIA\nKANTOR KEMENTERIAN AGAMA KOTA BANJARMASIN',
+            kopAlamat: 'Jl. Pangeran Samudera No. 44, Kertak Baru Ulu, Kec. Banjarmasin Tengah, Kota Banjarmasin',
+            logoGovUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/9a/Kementerian_Agama_new_logo.png',
+            logoGovWidth: 65,
+            logoMadrasahUrl: 'https://iili.io/CQPsxMQ.md.png',
+            logoMadrasahWidth: 65,
+            headmasterSignatureUrl: ''
+        };
+        let gpsState = {
+            lat: -3.319420,
+            lng: 114.590715,
+            distance: 16,
+            mode: 'SIM_IN',
+            lastChecked: new Date().toLocaleTimeString('id-ID')
+        };
+        let presensiFilterBulan = new Date().toISOString().slice(0, 7);
+
         // State Filter Khusus Riwayat Jurnal Guru (Rentang Tanggal)
         let jurnalFilterKelas = '';
         let jurnalFilterTanggalMulai = '';
@@ -139,6 +430,19 @@
         let adminCachedSchedules = [];
         let adminCachedEvaluations = [];
 
+        // Helper Pengambilan Data Tanda Tangan Guru & Kamad
+        window.getGuruSignature = function(userId) {
+            const uid = userId || (currentUser ? currentUser.uid : 'mock-guru-id');
+            const local = localStorage.getItem('omni_guru_signature_' + uid);
+            if (local) return local;
+            if (currentUser && currentUser.signatureUrl) return currentUser.signatureUrl;
+            return '';
+        };
+
+        window.getKamadSignature = function() {
+            return schoolSettings.headmasterSignatureUrl || '';
+        };
+
         const root = document.getElementById('app');
 
         window.toggleTheme = function() {
@@ -148,7 +452,7 @@
             
             if (newTheme === 'light') {
                 htmlEl.classList.remove('dark');
-                document.body.className = "h-full bg-slate-100 text-slate-800 flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200";
+                document.body.className = "h-full bg-slate-50 text-slate-800 flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200";
             } else {
                 htmlEl.classList.add('dark');
                 document.body.className = "h-full bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200";
@@ -162,7 +466,7 @@
             const htmlEl = document.documentElement;
             if (savedTheme === 'light') {
                 htmlEl.classList.remove('dark');
-                document.body.className = "h-full bg-slate-100 text-slate-800 flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200";
+                document.body.className = "h-full bg-slate-50 text-slate-800 flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200";
             } else {
                 htmlEl.classList.add('dark');
                 document.body.className = "h-full bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-200";
@@ -193,6 +497,17 @@
 
         function initApp() {
             initTheme();
+            const savedSettings = localStorage.getItem('omni_school_settings');
+            if (savedSettings) {
+                try {
+                    schoolSettings = { ...schoolSettings, ...JSON.parse(savedSettings) };
+                    // Migrasi otomatis jika URL lama yang 404 masih tersimpan di cache lokal pengguna
+                    if (schoolSettings.logoGovUrl && schoolSettings.logoGovUrl.includes('Kementerian_Agama_Indonesia_logo.svg')) {
+                        schoolSettings.logoGovUrl = 'https://upload.wikimedia.org/wikipedia/commons/9/9a/Kementerian_Agama_new_logo.png';
+                        localStorage.setItem('omni_school_settings', JSON.stringify(schoolSettings));
+                    }
+                } catch(e) {}
+            }
             if (is_preview) {
                 currentUser = { uid: 'mock-guru-id', email: 'saprudin@ud.in', name: 'Saprudin, S.Ag', role: 'guru' };
                 userRole = 'guru';
@@ -351,6 +666,12 @@
                                     Ganti Role (${userRole === 'admin' ? 'Guru' : 'Admin'})
                                 </button>
                                 ` : ''}
+                                ${userRole === 'guru' ? `
+                                <button onclick="window.toggleGuruSignatureModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition" title="Upload Tanda Tangan / Barcode Guru">
+                                    <i class="fa-solid fa-signature text-indigo-400"></i>
+                                    <span class="hidden sm:inline">TTD Saya</span>
+                                </button>
+                                ` : ''}
                                 <button onclick="window.toggleTheme()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition border border-slate-700" title="Ganti Tema">
                                     <i id="theme-icon" class="fa-solid ${localStorage.getItem('theme') === 'light' ? 'fa-moon text-slate-300' : 'fa-sun text-amber-400'} text-sm"></i>
                                 </button>
@@ -365,6 +686,57 @@
                 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
                     ${userRole === 'admin' ? renderAdminDashboardHTML() : renderGuruDashboardHTML()}
                 </main>
+
+                <!-- MODAL UPLOAD TTD / BARCODE GURU (PNG) -->
+                <div id="guru-signature-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <div>
+                                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-signature text-indigo-400"></i> Tanda Tangan / Barcode Guru
+                                </h3>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Upload TTD basah (PNG transparan) atau QR Code/Barcode akun Anda.</p>
+                            </div>
+                            <button onclick="window.toggleGuruSignatureModal()" class="text-slate-400 hover:text-white p-1">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="space-y-4 text-xs">
+                            <!-- Preview Box -->
+                            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center min-h-[110px] text-center">
+                                <div id="guru-sig-preview-container" class="w-full flex items-center justify-center">
+                                    <!-- Dynamic preview image -->
+                                </div>
+                            </div>
+
+                            <!-- Upload Berkas PNG -->
+                            <div class="space-y-1.5">
+                                <label class="block font-bold text-slate-300 uppercase">Pilih Berkas PNG (TTD / Barcode)</label>
+                                <input type="file" id="input-guru-sig-file" accept="image/png, image/jpeg, image/webp" onchange="window.handleGuruSigFileUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                                <p class="text-[10px] text-slate-500">Disarankan berkas PNG transparan agar rapi di atas dokumen cetak.</p>
+                            </div>
+
+                            <!-- Opsi Tautan / URL -->
+                            <div class="space-y-1.5">
+                                <label class="block font-bold text-slate-300 uppercase">Atau Masukkan Tautan / URL Gambar</label>
+                                <input type="text" id="input-guru-sig-url" placeholder="https://.../ttd-guru.png" oninput="window.handleGuruSigUrlInput(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white outline-none focus:border-indigo-500 text-xs">
+                            </div>
+
+                            <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+                                <button type="button" onclick="window.clearGuruSignature()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold flex items-center gap-1">
+                                    <i class="fa-solid fa-trash-can"></i> Hapus TTD
+                                </button>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="window.toggleGuruSignatureModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition">Batal</button>
+                                    <button type="button" onclick="window.saveGuruSignature()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-lg shadow-indigo-600/20 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-check"></i> Simpan TTD
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             `;
 
             window.toggleRoleSimulation = function() {
@@ -398,7 +770,7 @@
         window.switchTab = function(tab) {
             currentTab = tab;
             localStorage.setItem('omni_tab', tab);
-            const tabs = ['jurnal', 'nilai', 'grader', 'evaluasi'];
+            const tabs = ['jurnal', 'nilai', 'grader', 'evaluasi', 'presensi'];
             tabs.forEach(t => {
                 const content = document.getElementById(`content-tab-${t}`);
                 const btn = document.getElementById(`tab-btn-${t}`);
@@ -414,6 +786,9 @@
                     }
                 }
             });
+            if (tab === 'presensi') {
+                renderPresensiUI();
+            }
         };
 
         function initAdminLogic() {
@@ -426,6 +801,8 @@
                 adminCachedGrades = window.mockData.grades;
                 adminCachedSchedules = window.mockData.schedules;
                 adminCachedEvaluations = window.mockData.evaluations || [];
+                adminCachedAttendances = window.mockData.attendances || [];
+                adminCachedLeaves = window.mockData.leaves || [];
                 renderAdminData();
             } else {
                 if (!db) return;
@@ -453,6 +830,16 @@
 
                 onSnapshot(collectionGroup(db, 'evaluations'), (snap) => {
                     adminCachedEvaluations = snap.docs.map(doc => ({ id: doc.id, teacherId: doc.ref.parent.parent.id, ...doc.data() }));
+                    updateAdminUI();
+                });
+
+                onSnapshot(collectionGroup(db, 'attendances'), (snap) => {
+                    adminCachedAttendances = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
+                    updateAdminUI();
+                });
+
+                onSnapshot(collectionGroup(db, 'leaves'), (snap) => {
+                    adminCachedLeaves = snap.docs.map(doc => ({ id: doc.id, userId: doc.ref.parent.parent.id, ...doc.data() }));
                     updateAdminUI();
                 });
             }
@@ -657,6 +1044,86 @@
                                             ` : (ev.readAt ? `<p class="text-[10px] text-slate-500 italic">Dikonfirmasi dibaca pada: ${ev.readAt}</p>` : '')}
                                         </div>
                                     `).join('');
+                                })()}
+                            </div>
+                        </div>
+
+                        <!-- MONITORING PRESENSI & PERSETUJUAN IZIN GURU (MATA DEWA) -->
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
+                                <i class="fa-solid fa-user-clock mr-2 text-blue-500"></i> MONITORING PRESENSI & PERMOHONAN IZIN GURU
+                            </h3>
+                            
+                            <!-- Persetujuan Permohonan Izin / Dinas Luar -->
+                            <div class="space-y-2">
+                                <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                                    <i class="fa-solid fa-file-signature text-amber-400 mr-1.5"></i> Verifikasi Pengajuan Izin / Cuti
+                                </h4>
+                                ${(() => {
+                                    const teacherLeaves = adminCachedLeaves.filter(l => l.userId === selectedTeacher.id);
+                                    if (teacherLeaves.length === 0) return `<p class="text-xs text-slate-500 italic py-1">Tidak ada permohonan izin dari guru ini.</p>`;
+                                    return teacherLeaves.map(lv => `
+                                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                            <div class="space-y-1">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${lv.type === 'SAKIT' ? 'bg-amber-900/30 text-amber-400 border border-amber-800/50' : lv.type === 'DINAS LUAR' ? 'bg-indigo-900/30 text-indigo-400 border border-indigo-800/50' : 'bg-blue-900/30 text-blue-400 border border-blue-800/50'}">${lv.type}</span>
+                                                    <span class="text-slate-400 text-[11px] font-mono">${lv.startDate} s/d ${lv.endDate}</span>
+                                                </div>
+                                                <p class="text-slate-200"><strong>Alasan:</strong> ${lv.reason}</p>
+                                            </div>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                ${lv.status === 'PENDING' ? `
+                                                    <button onclick="window.adminProcessLeave('${lv.id}', 'APPROVED', '${selectedTeacher.id}')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1">
+                                                        <i class="fa-solid fa-check"></i> Setujui
+                                                    </button>
+                                                    <button onclick="window.adminProcessLeave('${lv.id}', 'REJECTED', '${selectedTeacher.id}')" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition flex items-center gap-1">
+                                                        <i class="fa-solid fa-xmark"></i> Tolak
+                                                    </button>
+                                                ` : `
+                                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${lv.status === 'APPROVED' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30' : 'bg-rose-950/40 text-rose-400 border border-rose-500/30'}">
+                                                        ${lv.status}
+                                                    </span>
+                                                `}
+                                            </div>
+                                        </div>
+                                    `).join('');
+                                })()}
+                            </div>
+
+                            <!-- Riwayat Log Kehadiran Terakhir Guru -->
+                            <div class="pt-3 border-t border-slate-800 space-y-2">
+                                <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                                    <i class="fa-solid fa-clock-rotate-left text-blue-400 mr-1.5"></i> Log Kehadiran Terbaru
+                                </h4>
+                                ${(() => {
+                                    const teacherAtts = adminCachedAttendances.filter(a => a.userId === selectedTeacher.id).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+                                    if (teacherAtts.length === 0) return `<p class="text-xs text-slate-500 italic py-1">Belum ada catatan presensi.</p>`;
+                                    return `
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-left text-xs">
+                                                <thead class="text-slate-400 border-b border-slate-800 bg-slate-900/50">
+                                                    <tr>
+                                                        <th class="p-2">Tanggal</th>
+                                                        <th class="p-2">Masuk</th>
+                                                        <th class="p-2">Pulang</th>
+                                                        <th class="p-2">Status</th>
+                                                        <th class="p-2">GPS</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-slate-800/50">
+                                                    ${teacherAtts.map(a => `
+                                                        <tr>
+                                                            <td class="p-2 font-mono text-slate-300">${a.date}</td>
+                                                            <td class="p-2 font-mono text-slate-200">${a.clockIn || '-'}</td>
+                                                            <td class="p-2 font-mono text-slate-200">${a.clockOut || '-'}</td>
+                                                            <td class="p-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${a.status === 'HADIR' ? 'bg-emerald-900/30 text-emerald-400' : a.status === 'TERLAMBAT' ? 'bg-amber-900/30 text-amber-400' : 'bg-indigo-900/30 text-indigo-400'}">${a.status}</span></td>
+                                                            <td class="p-2 text-slate-400">${a.distance ? a.distance + ' m' : '-'}</td>
+                                                        </tr>
+                                                    `).join('')}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    `;
                                 })()}
                             </div>
                         </div>
@@ -896,20 +1363,335 @@
             }
         };
 
+        window.toggleAdminSettingsModal = function() {
+            const modal = document.getElementById('admin-settings-modal');
+            if (modal) {
+                modal.classList.toggle('hidden');
+                if (!modal.classList.contains('hidden')) {
+                    window.renderKamadSigPreview();
+                }
+            }
+        };
+
+        // =========================================================================
+        // LOGIKA UPLOAD TANDA TANGAN / BARCODE GURU & KAMAD
+        // =========================================================================
+        let tempGuruSigData = '';
+        let tempKamadSigData = '';
+
+        window.toggleGuruSignatureModal = function() {
+            const modal = document.getElementById('guru-signature-modal');
+            if (!modal) return;
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                const uid = currentUser ? currentUser.uid : 'mock-guru-id';
+                const currentSig = window.getGuruSignature(uid);
+                tempGuruSigData = currentSig;
+                document.getElementById('input-guru-sig-url').value = currentSig.startsWith('http') ? currentSig : '';
+                window.renderGuruSigPreview(currentSig);
+            }
+        };
+
+        window.renderGuruSigPreview = function(sigSrc) {
+            const container = document.getElementById('guru-sig-preview-container');
+            if (!container) return;
+            if (sigSrc) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center gap-2">
+                        <img src="${sigSrc}" class="max-h-20 max-w-[160px] object-contain border border-slate-700 bg-white/5 p-1 rounded-lg" alt="Pratinjau TTD Guru">
+                        <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> TTD / Barcode Terpasang</span>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<span class="text-slate-500 italic text-xs">Belum ada TTD / Barcode yang diunggah</span>`;
+            }
+        };
+
+        window.handleGuruSigFileUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) {
+                return window.showToast('Ukuran berkas PNG maksimal 2MB!', 'error');
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempGuruSigData = e.target.result;
+                window.renderGuruSigPreview(tempGuruSigData);
+                window.showToast('Berkas TTD berhasil dimuat, klik "Simpan TTD" untuk menyimpan.', 'info');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.handleGuruSigUrlInput = function(val) {
+            tempGuruSigData = val.trim();
+            window.renderGuruSigPreview(tempGuruSigData);
+        };
+
+        window.clearGuruSignature = function() {
+            tempGuruSigData = '';
+            document.getElementById('input-guru-sig-file').value = '';
+            document.getElementById('input-guru-sig-url').value = '';
+            window.renderGuruSigPreview('');
+            window.showToast('Pratinjau TTD dibersihkan.', 'info');
+        };
+
+        window.saveGuruSignature = async function() {
+            const uid = currentUser ? currentUser.uid : 'mock-guru-id';
+            localStorage.setItem('omni_guru_signature_' + uid, tempGuruSigData);
+            if (currentUser) currentUser.signatureUrl = tempGuruSigData;
+
+            if (!is_preview && db && currentUser) {
+                try {
+                    await setDoc(doc(db, 'users', uid), { signatureUrl: tempGuruSigData }, { merge: true });
+                } catch(err) {
+                    console.warn("Gagal simpan TTD ke cloud:", err);
+                }
+            }
+            window.toggleGuruSignatureModal();
+            window.showToast('Tanda Tangan / Barcode Guru berhasil disimpan!');
+        };
+
+        // Kamad Signature Handler (Admin)
+        window.renderKamadSigPreview = function() {
+            const container = document.getElementById('kamad-sig-preview-container');
+            if (!container) return;
+            const sig = schoolSettings.headmasterSignatureUrl || tempKamadSigData;
+            if (sig) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center gap-1.5">
+                        <img src="${sig}" class="max-h-16 max-w-[140px] object-contain border border-slate-700 bg-white/5 p-1 rounded-lg" alt="Pratinjau TTD Kamad">
+                        <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> TTD / Barcode Kamad Aktif</span>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<span class="text-slate-500 italic text-[11px]">Belum ada TTD / Barcode Kamad</span>`;
+            }
+        };
+
+        window.handleKamadSigFileUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) {
+                return window.showToast('Ukuran berkas PNG maksimal 2MB!', 'error');
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempKamadSigData = e.target.result;
+                schoolSettings.headmasterSignatureUrl = tempKamadSigData;
+                window.renderKamadSigPreview();
+                window.showToast('Berkas TTD Kamad dimuat. Klik "Simpan Pengaturan" untuk menetapkan.', 'info');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.handleKamadSigUrlInput = function(val) {
+            schoolSettings.headmasterSignatureUrl = val.trim();
+            window.renderKamadSigPreview();
+        };
+
+        window.clearKamadSignature = function() {
+            schoolSettings.headmasterSignatureUrl = '';
+            tempKamadSigData = '';
+            const fileInput = document.getElementById('cfg-kamad-sig-file');
+            const urlInput = document.getElementById('cfg-kamad-sig-url');
+            if (fileInput) fileInput.value = '';
+            if (urlInput) urlInput.value = '';
+            window.renderKamadSigPreview();
+            window.showToast('TTD Kamad dibersihkan.', 'info');
+        };
+
+        window.saveSchoolSettings = async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('cfg-school-name').value.trim();
+            const city = document.getElementById('cfg-school-city').value.trim();
+            const headmasterName = document.getElementById('cfg-kamad-name').value.trim();
+            const headmasterNip = document.getElementById('cfg-kamad-nip').value.trim();
+            const kopInstansi = document.getElementById('cfg-kop-instansi').value.trim();
+            const kopAlamat = document.getElementById('cfg-kop-alamat').value.trim();
+            const logoGovUrl = document.getElementById('cfg-logo-gov-url').value.trim();
+            const logoGovWidth = parseInt(document.getElementById('cfg-logo-gov-width').value) || 65;
+            const logoMadrasahUrl = document.getElementById('cfg-logo-madrasah-url').value.trim();
+            const logoMadrasahWidth = parseInt(document.getElementById('cfg-logo-madrasah-width').value) || 65;
+            const kamadSigUrl = document.getElementById('cfg-kamad-sig-url') ? document.getElementById('cfg-kamad-sig-url').value.trim() : schoolSettings.headmasterSignatureUrl;
+
+            schoolSettings.name = name || 'MI Al-Irsyad Al-Islamiyyah Banjarmasin';
+            schoolSettings.city = city || 'Banjarmasin';
+            schoolSettings.headmasterName = headmasterName || '';
+            schoolSettings.headmasterNip = headmasterNip || '-';
+            schoolSettings.kopInstansi = kopInstansi || 'KEMENTERIAN AGAMA REPUBLIK INDONESIA';
+            schoolSettings.kopAlamat = kopAlamat || '';
+            schoolSettings.logoGovUrl = logoGovUrl;
+            schoolSettings.logoGovWidth = logoGovWidth;
+            schoolSettings.logoMadrasahUrl = logoMadrasahUrl;
+            schoolSettings.logoMadrasahWidth = logoMadrasahWidth;
+            if (kamadSigUrl) schoolSettings.headmasterSignatureUrl = kamadSigUrl;
+
+            localStorage.setItem('omni_school_settings', JSON.stringify(schoolSettings));
+
+            if (!is_preview && db) {
+                try {
+                    await setDoc(doc(db, 'settings', 'schoolSettings'), schoolSettings, { merge: true });
+                } catch(err) {
+                    console.warn("Gagal simpan ke firestore:", err);
+                }
+            }
+
+            window.toggleAdminSettingsModal();
+            window.showToast('Pengaturan TTD, KOP, Logo & TTD Kamad berhasil disimpan!', 'success');
+            renderMainDashboard();
+        };
+
         function renderAdminDashboardHTML() {
             return `
                 <div class="space-y-6">
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                        <div class="flex flex-col md:flex-row md:items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-blue-900/20 text-blue-500 flex items-center justify-center border border-blue-800/30 text-xl flex-shrink-0">
-                                <i class="fa-solid fa-eye"></i>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-blue-900/20 text-blue-500 flex items-center justify-center border border-blue-800/30 text-xl flex-shrink-0">
+                                    <i class="fa-solid fa-eye"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-slate-100 mb-1">Panel Pengawasan Akademik (Mata Dewa)</h3>
+                                    <p class="text-sm text-slate-400">Pilih akun guru di bawah berdasarkan nama untuk meninjau jadwal, jurnal harian lengkap serta mengirimkan arahan evaluasi.</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-100 mb-1">Panel Pengawasan Akademik (Mata Dewa)</h3>
-                                <p class="text-sm text-slate-400">Pilih akun guru di bawah berdasarkan nama untuk meninjau jadwal, jurnal harian lengkap serta mengirimkan arahan evaluasi.</p>
-                            </div>
+                            <button onclick="window.toggleAdminSettingsModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-indigo-600/20 shrink-0">
+                                <i class="fa-solid fa-file-signature"></i>
+                                <span>Pengaturan TTD & KOP</span>
+                            </button>
                         </div>
                     </div>
+
+                    <!-- MODAL FORM PENGATURAN TTD & KOP MADRASAH -->
+                    <div id="admin-settings-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-xl w-full shadow-2xl relative space-y-4 max-h-[92vh] overflow-y-auto">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <div>
+                                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-file-signature text-indigo-400"></i> Pengaturan TTD, KOP & Logo
+                                    </h3>
+                                    <p class="text-xs text-slate-400 mt-0.5">Atur logo instansi (kiri), logo madrasah (kanan), scaling ukuran, dan pengesahan.</p>
+                                </div>
+                                <button onclick="window.toggleAdminSettingsModal()" class="text-slate-400 hover:text-white p-1">
+                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+
+                            <form onsubmit="window.saveSchoolSettings(event)" class="space-y-4 text-xs">
+                                <!-- PENGATURAN LOGO KIRI (PEMERINTAH) & LOGO KANAN (MADRASAH) DENGAN SCALING -->
+                                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+                                    <span class="text-[11px] font-bold text-indigo-400 uppercase tracking-wider block flex items-center gap-1.5">
+                                        <i class="fa-solid fa-sliders text-xs"></i> Pengaturan Logo & Skala Ukuran (KOP Surat)
+                                    </span>
+                                    
+                                    <!-- LOGO KIRI: INSTANSI PEMERINTAH (KEMENAG) -->
+                                    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+                                        <div class="flex justify-between items-center">
+                                            <label class="font-bold text-slate-300">1. Logo Kiri (Instansi Pemerintah / Kemenag)</label>
+                                            <span class="text-[11px] font-mono text-indigo-400" id="lbl-scale-gov">${schoolSettings.logoGovWidth || 65}px</span>
+                                        </div>
+                                        <input type="text" id="cfg-logo-gov-url" value="${schoolSettings.logoGovUrl || ''}" placeholder="URL Logo Instansi (Cth: Logo Kemenag)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-indigo-500">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] text-slate-500 font-semibold">Skala:</span>
+                                            <input type="range" id="cfg-logo-gov-width" min="30" max="130" value="${schoolSettings.logoGovWidth || 65}" oninput="document.getElementById('lbl-scale-gov').textContent = this.value + 'px'" class="flex-1 accent-indigo-500 cursor-pointer">
+                                        </div>
+                                    </div>
+
+                                    <!-- LOGO KANAN: MADRASAH -->
+                                    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+                                        <div class="flex justify-between items-center">
+                                            <label class="font-bold text-slate-300">2. Logo Kanan (Madrasah / Lembaga)</label>
+                                            <span class="text-[11px] font-mono text-indigo-400" id="lbl-scale-mad">${schoolSettings.logoMadrasahWidth || 65}px</span>
+                                        </div>
+                                        <input type="text" id="cfg-logo-madrasah-url" value="${schoolSettings.logoMadrasahUrl || ''}" placeholder="URL Logo Madrasah (Cth: Logo MI Al-Irsyad)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-indigo-500">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] text-slate-500 font-semibold">Skala:</span>
+                                            <input type="range" id="cfg-logo-madrasah-width" min="30" max="130" value="${schoolSettings.logoMadrasahWidth || 65}" oninput="document.getElementById('lbl-scale-mad').textContent = this.value + 'px'" class="flex-1 accent-indigo-500 cursor-pointer">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- TEKS KOP SURAT -->
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block font-bold text-slate-300 uppercase mb-1">Teks Instansi Pembina (Atas)</label>
+                                        <textarea id="cfg-kop-instansi" rows="2" placeholder="Contoh: KEMENTERIAN AGAMA REPUBLIK INDONESIA&#10;KANTOR KEMENTERIAN AGAMA KOTA BANJARMASIN" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white outline-none focus:border-indigo-500">${schoolSettings.kopInstansi || ''}</textarea>
+                                    </div>
+
+                                    <div>
+                                        <label class="block font-bold text-slate-300 uppercase mb-1">Nama Madrasah / Satuan Pendidikan</label>
+                                        <input type="text" id="cfg-school-name" value="${schoolSettings.name || ''}" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white outline-none focus:border-indigo-500">
+                                    </div>
+
+                                    <div>
+                                        <label class="block font-bold text-slate-300 uppercase mb-1">Alamat Lengkap & Kontak KOP</label>
+                                        <input type="text" id="cfg-kop-alamat" value="${schoolSettings.kopAlamat || ''}" placeholder="Contoh: Jl. Pangeran Samudera No. 44, Banjarmasin" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white outline-none focus:border-indigo-500">
+                                    </div>
+                                </div>
+
+                                <!-- INFORMASI TANDA TANGAN -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block font-bold text-slate-300 uppercase mb-1">Kota / Titimangsa</label>
+                                        <input type="text" id="cfg-school-city" value="${schoolSettings.city || 'Banjarmasin'}" required placeholder="Contoh: Banjarmasin" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white outline-none focus:border-indigo-500">
+                                    </div>
+                                    <div>
+                                        <label class="block font-bold text-slate-300 uppercase mb-1">NIP Kepala Madrasah</label>
+                                        <input type="text" id="cfg-kamad-nip" value="${schoolSettings.headmasterNip || ''}" placeholder="Contoh: 19780512 200501 1 003 atau -" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white outline-none focus:border-indigo-500">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block font-bold text-slate-300 uppercase mb-1">Nama Kepala Madrasah & Gelar</label>
+                                    <input type="text" id="cfg-kamad-name" value="${schoolSettings.headmasterName || ''}" required placeholder="Contoh: M. Rizky Nugraha A.B., S.H" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white outline-none focus:border-indigo-500">
+                                </div>
+
+                                <!-- PENGATURAN TANDA TANGAN / BARCODE KEPALA MADRASAH (PNG) UNTUK SEMUA GURU -->
+                                <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+                                    <div class="flex justify-between items-center">
+                                        <label class="font-bold text-indigo-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                                            <i class="fa-solid fa-signature text-xs"></i> Tanda Tangan / Barcode Kepala Madrasah (PNG)
+                                        </label>
+                                        <span class="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Otomatis di Semua Guru</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400">Upload TTD basah transparan (PNG) atau QR Code pengesahan Kepala Madrasah.</p>
+
+                                    <!-- Pratinjau TTD Kamad -->
+                                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 flex items-center justify-center min-h-[75px]">
+                                        <div id="kamad-sig-preview-container">
+                                            ${schoolSettings.headmasterSignatureUrl ? `
+                                                <div class="flex flex-col items-center gap-1">
+                                                    <img src="${schoolSettings.headmasterSignatureUrl}" class="max-h-16 max-w-[140px] object-contain border border-slate-700 bg-white/5 p-1 rounded-lg" alt="TTD Kamad">
+                                                    <span class="text-[10px] text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> TTD / Barcode Terpasang</span>
+                                                </div>
+                                            ` : `<span class="text-slate-500 italic text-[11px]">Belum ada TTD / Barcode Kamad</span>`}
+                                        </div>
+                                    </div>
+
+                                    <!-- Input File & URL -->
+                                    <div class="space-y-2">
+                                        <input type="file" id="cfg-kamad-sig-file" accept="image/png, image/jpeg, image/webp" onchange="window.handleKamadSigFileUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                                        <input type="text" id="cfg-kamad-sig-url" value="${schoolSettings.headmasterSignatureUrl || ''}" placeholder="Atau paste tautan URL gambar TTD PNG..." oninput="window.handleKamadSigUrlInput(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-indigo-500 text-xs">
+                                    </div>
+
+                                    <div class="flex justify-end pt-1">
+                                        <button type="button" onclick="window.clearKamadSignature()" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1">
+                                            <i class="fa-solid fa-trash-can"></i> Hapus TTD Kamad
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                                    <button type="button" onclick="window.toggleAdminSettingsModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition">Batal</button>
+                                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-lg shadow-indigo-600/20 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-check"></i>
+                                        <span>Simpan Pengaturan</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                     <div id="admin-teacher-list" class="w-full"></div>
                 </div>
             `;
@@ -921,61 +1703,61 @@
             loadGuruGrades();
             loadGraderExamsData();
             loadGuruEvaluations();
+            loadGuruAttendances();
+            loadGuruLeaves();
         }
 
+        // =========================================================================
+        // LOGIKA JADWAL MENGAJAR GURU (CRUD & HIGHLIGHT HARI INI)
+        // =========================================================================
         function loadGuruSchedules() {
             if (is_preview) {
-                cachedSchedules = window.mockData.schedules.filter(s => s.userId === currentUser.uid);
+                cachedSchedules = (window.mockData.schedules || []).filter(s => s.userId === currentUser.uid);
                 renderGuruSchedulesUI(cachedSchedules);
             } else {
                 if (!db || !currentUser) return;
-                onSnapshot(collection(db, 'users', currentUser.uid, 'schedules'), (snapshot) => {
-                    cachedSchedules = [];
-                    snapshot.forEach(doc => cachedSchedules.push({ id: doc.id, ...doc.data() }));
+                onSnapshot(collection(db, 'users', currentUser.uid, 'schedules'), (snap) => {
+                    cachedSchedules = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderGuruSchedulesUI(cachedSchedules);
-                }, (err) => { console.error(err); });
+                });
             }
         }
 
         function renderGuruSchedulesUI(schedules) {
             const container = document.getElementById('guru-schedule-list');
             if (!container) return;
+
             if (schedules.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 italic py-2">Belum ada jadwal mengajar yang diinput.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 italic py-2">Belum ada jadwal mengajar yang ditambahkan. Silakan gunakan formulir di atas.</p>`;
                 return;
             }
+
             const daysIndo = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             const currentDayIndo = daysIndo[new Date().getDay()];
-            const daysOrder = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6, 'Ahad': 7 };
 
             const sorted = [...schedules].sort((a, b) => {
-                if (daysOrder[a.hari] !== daysOrder[b.hari]) return (daysOrder[a.hari] || 99) - (daysOrder[b.hari] || 99);
+                const days = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6, 'Ahad': 7 };
+                if (days[a.hari] !== days[b.hari]) return (days[a.hari] || 99) - (days[b.hari] || 99);
                 return parseInt(a.jamKe || 0) - parseInt(b.jamKe || 0);
             });
 
             container.innerHTML = sorted.map(s => {
-                const isToday = (s.hari || '').trim().toLowerCase() === currentDayIndo.toLowerCase();
-                const safeHari = (s.hari || '').replace(/'/g, "\\'");
-                const safeJamKe = (s.jamKe || '').replace(/'/g, "\\'");
-                const safeWaktu = (s.waktu || '').replace(/'/g, "\\'");
-                const safeKelas = (s.kelas || '').replace(/'/g, "\\'");
-                const safeMapel = (s.mapel || '').replace(/'/g, "\\'");
-
+                const isToday = s.hari && s.hari.trim().toLowerCase() === currentDayIndo.toLowerCase();
                 return `
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 rounded-xl gap-2 transition-all ${isToday ? 'bg-indigo-950/60 border border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40' : 'bg-slate-950 border border-slate-800'}">
-                        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-                            <span class="text-[10px] font-bold uppercase px-2 py-1 rounded border whitespace-nowrap ${isToday ? 'text-indigo-200 bg-indigo-500/30 border-indigo-500/50' : 'text-blue-400 bg-blue-900/20 border-blue-800/50'}">${s.hari}</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl gap-2 transition-all ${isToday ? 'bg-indigo-950/60 border border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40' : 'bg-slate-950 border border-slate-800'}">
+                        <div class="flex items-center gap-2.5 flex-wrap flex-1">
+                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border whitespace-nowrap ${isToday ? 'text-indigo-200 bg-indigo-500/30 border-indigo-500/50' : 'text-blue-400 bg-blue-900/20 border-blue-800/50'}">${s.hari}</span>
                             ${isToday ? '<span class="text-[9px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">✨ Hari Ini</span>' : ''}
-                            <span class="text-[10px] text-slate-300 font-bold bg-slate-900 px-2 py-1 rounded border border-slate-800">Jam ke-${s.jamKe}</span>
-                            <span class="text-xs text-slate-300 font-mono bg-slate-900 px-2 py-1 rounded border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1"></i>${s.waktu}</span>
-                            <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-900/20 px-2 py-1 rounded border border-emerald-800/50 whitespace-nowrap">${s.kelas}</span>
-                            <span class="text-xs font-bold text-white flex-1">${s.mapel}</span>
+                            <span class="text-[10px] text-slate-300 font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Jam ke-${s.jamKe}</span>
+                            <span class="text-xs text-slate-300 font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1"></i>${s.waktu}</span>
+                            <span class="text-[10px] text-emerald-400 font-bold uppercase bg-emerald-900/20 px-2 py-0.5 rounded border border-emerald-800/50 whitespace-nowrap">${s.kelas}</span>
+                            <span class="text-xs font-bold text-white truncate">${s.mapel}</span>
                         </div>
-                        <div class="flex items-center space-x-2 self-end sm:self-center">
-                            <button onclick="window.editGuruSchedule('${s.id}', '${safeHari}', '${safeJamKe}', '${safeWaktu}', '${safeKelas}', '${safeMapel}')" class="text-indigo-400 hover:text-indigo-300 p-1.5 transition" title="Edit Jadwal">
+                        <div class="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+                            <button onclick="window.editSchedule('${s.id}')" class="text-indigo-400 hover:text-indigo-300 p-1.5 rounded-lg hover:bg-slate-800 transition" title="Edit Jadwal">
                                 <i class="fa-solid fa-pen text-xs"></i>
                             </button>
-                            <button onclick="window.deleteGuruSchedule('${s.id}')" class="text-rose-400 hover:text-rose-300 p-1.5 transition" title="Hapus Jadwal">
+                            <button onclick="window.deleteSchedule('${s.id}')" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg hover:bg-slate-800 transition" title="Hapus Jadwal">
                                 <i class="fa-solid fa-trash text-xs"></i>
                             </button>
                         </div>
@@ -984,6 +1766,85 @@
             }).join('');
         }
 
+        window.addGuruSchedule = async function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-sch-id').value;
+            const hari = document.getElementById('sch-hari').value;
+            const jamKe = document.getElementById('sch-jamke').value.trim();
+            const waktu = document.getElementById('sch-waktu').value.trim();
+            const kelas = document.getElementById('sch-kelas').value.trim();
+            const mapel = document.getElementById('sch-mapel').value.trim();
+
+            if (!hari || !jamKe || !waktu || !kelas || !mapel) {
+                return window.showToast('Semua kolom jadwal wajib diisi!', 'error');
+            }
+
+            const schData = {
+                hari,
+                jamKe,
+                waktu,
+                kelas,
+                mapel,
+                userId: currentUser.uid
+            };
+
+            if (is_preview) {
+                if (editId) {
+                    const idx = window.mockData.schedules.findIndex(s => s.id === editId);
+                    if (idx > -1) {
+                        window.mockData.schedules[idx] = { id: editId, ...schData };
+                    }
+                    window.showToast('Jadwal berhasil diperbarui!', 'success');
+                } else {
+                    window.mockData.schedules.push({ id: 'sch_' + Date.now(), ...schData });
+                    window.showToast('Jadwal baru berhasil ditambahkan!', 'success');
+                }
+                window.cancelEditSchedule();
+                loadGuruSchedules();
+            } else {
+                try {
+                    if (db && currentUser) {
+                        if (editId) {
+                            await setDoc(doc(db, 'users', currentUser.uid, 'schedules', editId), schData, { merge: true });
+                            window.showToast('Jadwal berhasil diperbarui ke Cloud!', 'success');
+                        } else {
+                            await addDoc(collection(db, 'users', currentUser.uid, 'schedules'), schData);
+                            window.showToast('Jadwal baru berhasil disimpan ke Cloud!', 'success');
+                        }
+                        window.cancelEditSchedule();
+                    }
+                } catch (err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
+        window.editSchedule = function(id) {
+            const sch = cachedSchedules.find(s => s.id === id);
+            if (!sch) return;
+
+            document.getElementById('edit-sch-id').value = sch.id;
+            document.getElementById('sch-hari').value = sch.hari || '';
+            document.getElementById('sch-jamke').value = sch.jamKe || '';
+            document.getElementById('sch-waktu').value = sch.waktu || '';
+            document.getElementById('sch-kelas').value = sch.kelas || '';
+            document.getElementById('sch-mapel').value = sch.mapel || '';
+
+            const btnSubmit = document.getElementById('btn-submit-sch');
+            if (btnSubmit) {
+                btnSubmit.innerHTML = `<i class="fa-solid fa-check text-xs"></i><span>Simpan</span>`;
+            }
+            const btnCancel = document.getElementById('btn-cancel-sch');
+            if (btnCancel) {
+                btnCancel.classList.remove('hidden');
+            }
+
+            const formEl = document.getElementById('edit-sch-id').closest('form');
+            if (formEl) {
+                formEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        };
+
         window.cancelEditSchedule = function() {
             document.getElementById('edit-sch-id').value = '';
             document.getElementById('sch-hari').value = '';
@@ -991,68 +1852,817 @@
             document.getElementById('sch-waktu').value = '';
             document.getElementById('sch-kelas').value = '';
             document.getElementById('sch-mapel').value = '';
-            const btn = document.getElementById('btn-submit-sch');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-plus text-xs mr-1"></i> Tambah';
+
+            const btnSubmit = document.getElementById('btn-submit-sch');
+            if (btnSubmit) {
+                btnSubmit.innerHTML = `<i class="fa-solid fa-plus text-xs"></i><span>Tambah</span>`;
+            }
             const btnCancel = document.getElementById('btn-cancel-sch');
-            if (btnCancel) btnCancel.classList.add('hidden');
+            if (btnCancel) {
+                btnCancel.classList.add('hidden');
+            }
         };
 
-        window.addGuruSchedule = async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('edit-sch-id').value;
-            const data = {
-                hari: document.getElementById('sch-hari').value,
-                jamKe: document.getElementById('sch-jamke').value,
-                waktu: document.getElementById('sch-waktu').value,
-                kelas: document.getElementById('sch-kelas').value,
-                mapel: document.getElementById('sch-mapel').value,
-                userId: currentUser ? currentUser.uid : 'mock-guru-id'
-            };
-
-            const resetForm = () => {
-                window.cancelEditSchedule();
-            };
-
+        window.deleteSchedule = async function(id) {
             if (is_preview) {
-                if (id) {
-                    const idx = window.mockData.schedules.findIndex(s => s.id === id);
-                    if (idx > -1) window.mockData.schedules[idx] = { id, ...data };
-                } else {
-                    window.mockData.schedules.push({ id: 'sch_' + Date.now(), ...data });
-                }
-                resetForm();
+                window.mockData.schedules = window.mockData.schedules.filter(s => s.id !== id);
                 loadGuruSchedules();
-                window.showToast('Jadwal berhasil disimpan!');
+                window.showToast('Jadwal berhasil dihapus!', 'success');
             } else {
                 try {
                     if (db && currentUser) {
-                        if (id) {
-                            await setDoc(doc(db, 'users', currentUser.uid, 'schedules', id), data);
-                        } else {
-                            await addDoc(collection(db, 'users', currentUser.uid, 'schedules'), data);
-                        }
+                        await deleteDoc(doc(db, 'users', currentUser.uid, 'schedules', id));
+                        window.showToast('Jadwal berhasil dihapus dari Cloud!', 'success');
                     }
-                    resetForm();
-                    window.showToast('Jadwal berhasil disimpan ke Cloud!');
+                } catch (err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
+        // =========================================================================
+        // LOGIKA MODUL PRESENSI GURU & GEOFENCING GPS
+        // =========================================================================
+        function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Radius bumi dalam meter
+            const toRad = deg => (deg * Math.PI) / 180;
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return Math.round(R * c);
+        }
+
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const clean = timeStr.replace('.', ':');
+            const [h, m] = clean.split(':').map(Number);
+            return (h || 0) * 60 + (m || 0);
+        }
+
+        function loadGuruAttendances() {
+            if (is_preview) {
+                cachedAttendances = (window.mockData.attendances || []).filter(a => a.userId === currentUser.uid);
+                renderPresensiUI();
+            } else {
+                if (!db || !currentUser) return;
+                onSnapshot(collection(db, 'users', currentUser.uid, 'attendances'), (snap) => {
+                    cachedAttendances = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderPresensiUI();
+                });
+            }
+        }
+
+        function loadGuruLeaves() {
+            if (is_preview) {
+                cachedLeaves = (window.mockData.leaves || []).filter(l => l.userId === currentUser.uid);
+                renderPresensiUI();
+            } else {
+                if (!db || !currentUser) return;
+                onSnapshot(collection(db, 'users', currentUser.uid, 'leaves'), (snap) => {
+                    cachedLeaves = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderPresensiUI();
+                });
+            }
+        }
+
+        window.setPresensiGpsMode = function(mode) {
+            if (mode === 'REAL') {
+                if (!navigator.geolocation) {
+                    return window.showToast('Geolocation tidak didukung pada peramban ini.', 'error');
+                }
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        const dist = calculateHaversineDistance(lat, lng, schoolSettings.lat, schoolSettings.lng);
+                        gpsState = {
+                            lat,
+                            lng,
+                            distance: dist,
+                            mode: 'REAL',
+                            lastChecked: new Date().toLocaleTimeString('id-ID')
+                        };
+                        window.showToast(`GPS Asli terbaca. Jarak: ${dist} meter ke madrasah.`, dist <= schoolSettings.radius ? 'success' : 'error');
+                        renderPresensiUI();
+                    },
+                    (err) => {
+                        window.showToast(`Gagal membaca GPS asli (${err.message}). Gunakan simulasi radius.`, 'error');
+                    },
+                    { enableHighAccuracy: true, timeout: 8000 }
+                );
+            } else if (mode === 'SIM_IN') {
+                const lat = schoolSettings.lat + 0.00010;
+                const lng = schoolSettings.lng + 0.00008;
+                const dist = calculateHaversineDistance(lat, lng, schoolSettings.lat, schoolSettings.lng);
+                gpsState = { lat, lng, distance: dist, mode: 'SIM_IN', lastChecked: new Date().toLocaleTimeString('id-ID') };
+                window.showToast(`Simulasi DALAM Radius aktif (${dist} meter ke madrasah).`, 'success');
+                renderPresensiUI();
+            } else if (mode === 'SIM_OUT') {
+                const lat = schoolSettings.lat + 0.0035;
+                const lng = schoolSettings.lng + 0.0025;
+                const dist = calculateHaversineDistance(lat, lng, schoolSettings.lat, schoolSettings.lng);
+                gpsState = { lat, lng, distance: dist, mode: 'SIM_OUT', lastChecked: new Date().toLocaleTimeString('id-ID') };
+                window.showToast(`Simulasi LUAR Radius aktif (${dist} meter). Di luar jangkauan!`, 'error');
+                renderPresensiUI();
+            }
+        };
+
+        window.submitClockIn = async function() {
+            const todayObj = new Date();
+            if (todayObj.getDay() === 0) {
+                return window.showToast('Hari Ahad/Minggu adalah hari libur sekolah. Presensi tidak aktif (-).', 'error');
+            }
+
+            if (gpsState.distance > schoolSettings.radius) {
+                return window.showToast(`Absen Masuk Ditolak! Anda berada ${gpsState.distance} meter dari madrasah (Maks: ${schoolSettings.radius}m).`, 'error');
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            const limitMin = timeToMinutes(schoolSettings.clockInLimit);
+            const currentMin = timeToMinutes(timeStr);
+            const tolerance = schoolSettings.lateTolerance || 0;
+
+            let status = 'HADIR';
+            let lateMinutes = 0;
+            let notes = 'Tepat waktu sesuai jadwal';
+
+            if (currentMin > (limitMin + tolerance)) {
+                status = 'TERLAMBAT';
+                lateMinutes = currentMin - limitMin;
+                notes = `Terlambat ${lateMinutes} menit`;
+            } else if (currentMin > limitMin) {
+                notes = `Toleransi kehadiran (${currentMin - limitMin} menit)`;
+            }
+
+            const attObj = {
+                userId: currentUser.uid,
+                date: today,
+                clockIn: timeStr,
+                clockOut: null,
+                status,
+                lateMinutes,
+                distance: gpsState.distance,
+                notes
+            };
+
+            if (is_preview) {
+                const existing = window.mockData.attendances.find(a => a.userId === currentUser.uid && a.date === today);
+                if (existing) return window.showToast('Anda sudah melakukan Absen Masuk hari ini!', 'error');
+
+                window.mockData.attendances.unshift({ id: 'att_' + Date.now(), ...attObj });
+                loadGuruAttendances();
+                window.showToast(`Absen Masuk berhasil dicatat pukul ${timeStr} (${status})!`, status === 'HADIR' ? 'success' : 'error');
+            } else {
+                try {
+                    const qAtt = query(collection(db, 'users', currentUser.uid, 'attendances'), where('date', '==', today));
+                    const snap = await getDocs(qAtt);
+                    if (!snap.empty) return window.showToast('Anda sudah melakukan Absen Masuk hari ini!', 'error');
+
+                    await addDoc(collection(db, 'users', currentUser.uid, 'attendances'), attObj);
+                    window.showToast(`Absen Masuk berhasil dicatat pukul ${timeStr} (${status})!`, status === 'HADIR' ? 'success' : 'error');
+                } catch (err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
+        window.submitClockOut = async function() {
+            const todayObj = new Date();
+            if (todayObj.getDay() === 0) {
+                return window.showToast('Hari Ahad/Minggu adalah hari libur sekolah. Presensi tidak aktif (-).', 'error');
+            }
+
+            if (gpsState.distance > schoolSettings.radius) {
+                return window.showToast(`Absen Pulang Ditolak! Anda berada di luar radius madrasah (${gpsState.distance}m).`, 'error');
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            if (is_preview) {
+                const existing = window.mockData.attendances.find(a => a.userId === currentUser.uid && a.date === today);
+                if (!existing) return window.showToast('Belum ada catatan Absen Masuk hari ini!', 'error');
+                if (existing.clockOut) return window.showToast('Anda sudah melakukan Absen Pulang hari ini.', 'error');
+
+                existing.clockOut = timeStr;
+                loadGuruAttendances();
+                window.showToast(`Absen Pulang berhasil dicatat pukul ${timeStr}!`, 'success');
+            } else {
+                try {
+                    const qAtt = query(collection(db, 'users', currentUser.uid, 'attendances'), where('date', '==', today));
+                    const snap = await getDocs(qAtt);
+                    if (snap.empty) return window.showToast('Belum ada catatan Absen Masuk hari ini!', 'error');
+                    const targetDoc = snap.docs[0];
+                    if (targetDoc.data().clockOut) return window.showToast('Anda sudah melakukan Absen Pulang hari ini.', 'error');
+
+                    await updateDoc(doc(db, 'users', currentUser.uid, 'attendances', targetDoc.id), {
+                        clockOut: timeStr
+                    });
+                    window.showToast(`Absen Pulang berhasil dicatat pukul ${timeStr}!`, 'success');
+                } catch (err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
+        };
+
+        window.submitGuruLeave = async function(e) {
+            e.preventDefault();
+            const type = document.getElementById('leave-type').value;
+            const startDate = document.getElementById('leave-start').value;
+            const endDate = document.getElementById('leave-end').value;
+            const reason = document.getElementById('leave-reason').value.trim();
+
+            if (!reason) return window.showToast('Tuliskan alasan pengajuan dengan jelas.', 'error');
+            if (endDate < startDate) return window.showToast('Tanggal selesai tidak boleh lebih awal dari tanggal mulai.', 'error');
+
+            const leaveObj = {
+                userId: currentUser.uid,
+                teacherName: currentUser.name || currentUser.email,
+                type,
+                startDate,
+                endDate,
+                reason,
+                status: 'PENDING',
+                createdAt: new Date().toISOString().split('T')[0]
+            };
+
+            if (is_preview) {
+                window.mockData.leaves.unshift({ id: 'lv_' + Date.now(), ...leaveObj });
+                document.getElementById('form-leave-request').reset();
+                loadGuruLeaves();
+                window.showToast('Permohonan izin berhasil dikirimkan ke Kepala Madrasah!', 'success');
+            } else {
+                try {
+                    await addDoc(collection(db, 'users', currentUser.uid, 'leaves'), leaveObj);
+                    document.getElementById('form-leave-request').reset();
+                    window.showToast('Permohonan izin berhasil dikirim ke Cloud!', 'success');
                 } catch(err) {
                     window.showToast(err.message, 'error');
                 }
             }
         };
 
-        window.editGuruSchedule = function(id, hari, jamKe, waktu, kelas, mapel) {
-            document.getElementById('edit-sch-id').value = id;
-            document.getElementById('sch-hari').value = hari || '';
-            document.getElementById('sch-jamke').value = jamKe || '';
-            document.getElementById('sch-waktu').value = waktu || '';
-            document.getElementById('sch-kelas').value = kelas || '';
-            document.getElementById('sch-mapel').value = mapel || '';
-            const btn = document.getElementById('btn-submit-sch');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-floppy-disk text-xs mr-1"></i> Simpan';
-            const btnCancel = document.getElementById('btn-cancel-sch');
-            if (btnCancel) btnCancel.classList.remove('hidden');
-            window.scrollTo({ top: document.getElementById('sch-hari').offsetTop - 80, behavior: 'smooth' });
+        window.adminProcessLeave = async function(leaveId, status, teacherId) {
+            if (is_preview) {
+                const lv = window.mockData.leaves.find(l => l.id === leaveId);
+                if (lv) {
+                    lv.status = status;
+                    if (status === 'APPROVED') {
+                        // Otomatis masukkan log ke presensi guru
+                        const existingAtt = window.mockData.attendances.find(a => a.userId === teacherId && a.date === lv.startDate);
+                        const logEntry = {
+                            id: 'att_lv_' + Date.now(),
+                            userId: teacherId,
+                            date: lv.startDate,
+                            clockIn: '-',
+                            clockOut: '-',
+                            status: lv.type,
+                            lateMinutes: 0,
+                            distance: 0,
+                            notes: `Disetujui Kamad (${lv.type}): ${lv.reason}`
+                        };
+                        if (existingAtt) {
+                            Object.assign(existingAtt, logEntry);
+                        } else {
+                            window.mockData.attendances.unshift(logEntry);
+                        }
+                    }
+                    adminCachedLeaves = window.mockData.leaves;
+                    adminCachedAttendances = window.mockData.attendances;
+                    renderAdminData();
+                    window.showToast(`Pengajuan ${status === 'APPROVED' ? 'disetujui' : 'ditolak'}!`, 'success');
+                }
+            } else {
+                try {
+                    await updateDoc(doc(db, 'users', teacherId, 'leaves', leaveId), { status });
+                    window.showToast(`Pengajuan ${status === 'APPROVED' ? 'disetujui' : 'ditolak'}!`, 'success');
+                } catch(err) {
+                    window.showToast(err.message, 'error');
+                }
+            }
         };
+
+        window.setPresensiFilterBulan = function(val) {
+            presensiFilterBulan = val;
+            renderPresensiUI();
+        };
+
+        window.exportPresensiXLSX = function() {
+            let data = [...cachedAttendances];
+            if (presensiFilterBulan) {
+                data = data.filter(a => a.date && a.date.startsWith(presensiFilterBulan));
+            }
+            if (data.length === 0) return window.showToast('Tidak ada data presensi untuk diekspor.', 'error');
+
+            if (typeof XLSX === 'undefined') {
+                return window.showToast('Pustaka Excel sedang dimuat, silakan coba sesaat lagi.', 'error');
+            }
+
+            const sortedData = data.sort((a,b) => new Date(a.date) - new Date(b.date));
+            const teacherName = currentUser.name || currentUser.email || 'Guru';
+            const teacherEmail = currentUser.email || '-';
+            const periodeStr = presensiFilterBulan || 'Semua Periode';
+            const todayIndo = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // Susun Struktur Baris Excel (KOP, Identitas, Tabel, dan Kolom TTD Pengesahan)
+            const aoa = [
+                ["REKAPITULASI PRESENSI KEHADIRAN GURU", "", "", ""],
+                [schoolSettings.name, "", "", ""],
+                ["", "", "", ""],
+                ["Nama Guru", ": " + teacherName, "", ""],
+                ["Email / Akun", ": " + teacherEmail, "", ""],
+                ["Periode Presensi", ": " + periodeStr, "", ""],
+                ["", "", "", ""],
+                ["No", "Tanggal", "Jam Masuk", "Jam Pulang"]
+            ];
+
+            sortedData.forEach((a, idx) => {
+                aoa.push([
+                    idx + 1,
+                    a.date,
+                    a.clockIn || '-',
+                    a.clockOut || '-'
+                ]);
+            });
+
+            // Blok Tanda Tangan Mengetahui Kepala Madrasah (Admin)
+            const docCity = schoolSettings.city || 'Banjarmasin';
+            const kamadName = schoolSettings.headmasterName ? schoolSettings.headmasterName : '( .................................................... )';
+            const kamadNip = schoolSettings.headmasterNip ? (schoolSettings.headmasterNip.startsWith('NIP') ? schoolSettings.headmasterNip : 'NIP. ' + schoolSettings.headmasterNip) : 'NIP. -';
+
+            aoa.push(["", "", "", ""]);
+            aoa.push(["", "", "", ""]);
+            aoa.push(["Guru yang Bersangkutan,", "", "", `${docCity}, ${todayIndo}`]);
+            aoa.push(["", "", "", "Mengetahui,"]);
+            aoa.push(["", "", "", "Kepala Madrasah (Admin)"]);
+            aoa.push(["", "", "", ""]);
+            aoa.push(["", "", "", ""]);
+            aoa.push(["", "", "", ""]);
+            aoa.push([teacherName, "", "", kamadName]);
+            aoa.push(["", "", "", kamadNip]);
+
+            const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+            // Pengaturan Lebar Kolom agar tidak terpotong saat dibuka di Excel
+            ws['!cols'] = [
+                { wch: 6 },   // No
+                { wch: 18 },  // Tanggal
+                { wch: 16 },  // Jam Masuk
+                { wch: 38 }   // Jam Pulang & Area TTD Admin
+            ];
+
+            // Merge KOP Judul Dokumen & Nama Madrasah
+            ws['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Rekap Presensi");
+
+            const cleanFileName = `Rekap_Presensi_${teacherName.replace(/\s+/g, '_')}_${presensiFilterBulan || 'Semua'}.xlsx`;
+            XLSX.writeFile(wb, cleanFileName);
+            window.showToast('File Excel (.xlsx) presensi berhasil diunduh!');
+        };
+        window.exportPresensiCSV = window.exportPresensiXLSX; // Alias pendukung
+
+        window.exportPresensiPDF = function() {
+            let data = [...cachedAttendances];
+            if (presensiFilterBulan) {
+                data = data.filter(a => a.date && a.date.startsWith(presensiFilterBulan));
+            }
+            if (data.length === 0) return window.showToast('Tidak ada data presensi untuk dicetak.', 'error');
+
+            window.showToast('Membangun dokumen PDF Rekap Presensi...', 'success');
+
+            const printElement = document.createElement('div');
+            const guruSig = window.getGuruSignature();
+            const kamadSig = window.getKamadSignature();
+
+            let htmlContent = `
+                <div style="width: 100%; max-width: 680px; margin: 0 auto; padding: 15px 20px; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #ffffff; box-sizing: border-box;">
+                    <!-- KOP & JUDUL DOKUMEN -->
+                    <div style="text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 14px;">
+                        <h2 style="margin: 0; color: #0f172a; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">REKAPITULASI PRESENSI KEHADIRAN GURU</h2>
+                        <h4 style="margin: 4px 0 0 0; color: #334155; font-size: 13px;">${schoolSettings.name}</h4>
+                    </div>
+
+                    <!-- IDENTITAS GURU -->
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 14px;">
+                        <tr>
+                            <td style="width: 120px; padding: 2px 0; font-weight: bold; color: #334155;">Nama Guru</td>
+                            <td style="width: 10px; padding: 2px 0; font-weight: bold;">:</td>
+                            <td style="padding: 2px 0; font-weight: bold; color: #0f172a;">${currentUser.name || currentUser.email}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 0; font-weight: bold; color: #334155;">Email / Akun</td>
+                            <td style="padding: 2px 0; font-weight: bold;">:</td>
+                            <td style="padding: 2px 0; color: #334155;">${currentUser.email || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 0; font-weight: bold; color: #334155;">Periode Presensi</td>
+                            <td style="padding: 2px 0; font-weight: bold;">:</td>
+                            <td style="padding: 2px 0; color: #334155;">${presensiFilterBulan || 'Semua Periode'}</td>
+                        </tr>
+                    </table>
+
+                    <!-- TABEL PRESENSI (HANYA TANGGAL, JAM MASUK, DAN JAM PULANG) -->
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; text-align: center;">
+                                <th style="padding: 7px; border: 1px solid #cbd5e1; width: 40px;">No</th>
+                                <th style="padding: 7px; border: 1px solid #cbd5e1; text-align: left;">Tanggal</th>
+                                <th style="padding: 7px; border: 1px solid #cbd5e1; width: 140px;">Jam Masuk</th>
+                                <th style="padding: 7px; border: 1px solid #cbd5e1; width: 140px;">Jam Pulang</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.sort((a,b) => new Date(a.date) - new Date(b.date)).map((a, idx) => `
+                                <tr>
+                                    <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; color: #64748b;">${idx + 1}</td>
+                                    <td style="padding: 6px 10px; border: 1px solid #cbd5e1; font-family: monospace; font-weight: 500;">${a.date}</td>
+                                    <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace; font-weight: bold; color: #047857;">${a.clockIn || '-'}</td>
+                                    <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace; font-weight: bold; color: #1d4ed8;">${a.clockOut || '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <!-- BLOK TANDA TANGAN DENGAN GAMBAR TTD / BARCODE (PNG) -->
+                    <table style="width: 100%; border: none; margin-top: 30px; font-size: 11px; page-break-inside: avoid; break-inside: avoid;">
+                        <tr>
+                            <td style="width: 50%; text-align: center; vertical-align: top; border: none;">
+                                <p style="margin: 0 0 5px 0;">Guru yang Bersangkutan,</p>
+                                <div style="height: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                    ${guruSig ? `<img src="${guruSig}" crossorigin="anonymous" style="max-height: 55px; max-width: 130px; object-fit: contain; margin: 0 auto; display: block;" alt="TTD Guru">` : ''}
+                                </div>
+                                <p style="margin: 0; font-weight: bold; text-decoration: underline;">${currentUser.name || currentUser.email}</p>
+                            </td>
+                            <td style="width: 50%; text-align: center; vertical-align: top; border: none;">
+                                <p style="margin: 0;">${schoolSettings.city || 'Banjarmasin'}, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                <p style="margin: 2px 0 0 0;">Mengetahui,</p>
+                                <p style="margin: 0 0 5px 0; font-weight: bold;">Kepala Madrasah (Admin)</p>
+                                <div style="height: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                    ${kamadSig ? `<img src="${kamadSig}" crossorigin="anonymous" style="max-height: 55px; max-width: 130px; object-fit: contain; margin: 0 auto; display: block;" alt="TTD Kamad">` : ''}
+                                </div>
+                                <p style="margin: 0; font-weight: bold; text-decoration: underline;">${schoolSettings.headmasterName ? schoolSettings.headmasterName : '( .................................................... )'}</p>
+                                <p style="margin: 2px 0 0 0; font-size: 10px; color: #64748b;">${schoolSettings.headmasterNip ? (schoolSettings.headmasterNip.startsWith('NIP') ? schoolSettings.headmasterNip : 'NIP. ' + schoolSettings.headmasterNip) : 'NIP. -'}</p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+            printElement.innerHTML = htmlContent;
+
+            const opt = {
+                margin: [0.4, 0.4, 0.4, 0.4],
+                filename: `Presensi_${(currentUser.name || 'Guru').replace(/\s+/g, '_')}_${presensiFilterBulan || 'Semua'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(printElement).save().then(() => {
+                window.showToast('Dokumen PDF Presensi berhasil diunduh!');
+            });
+        };
+
+        function renderPresensiUI() {
+            const container = document.getElementById('content-tab-presensi');
+            if (!container) return;
+
+            const today = new Date().toISOString().split('T')[0];
+            const isSunday = new Date().getDay() === 0;
+            const myAttToday = cachedAttendances.find(a => a.date === today);
+            const isInside = gpsState.distance <= schoolSettings.radius;
+
+            const now = new Date();
+            const timeHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            // Filter data bulan
+            let filteredLogs = [...cachedAttendances];
+            if (presensiFilterBulan) {
+                filteredLogs = filteredLogs.filter(a => a.date && a.date.startsWith(presensiFilterBulan));
+            }
+            filteredLogs.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            const countHadir = filteredLogs.filter(a => a.status === 'HADIR').length;
+            const countTerlambat = filteredLogs.filter(a => a.status === 'TERLAMBAT').length;
+            const countIzin = filteredLogs.filter(a => ['IZIN', 'SAKIT', 'DINAS LUAR'].includes(a.status)).length;
+
+            container.innerHTML = `
+                <!-- KARTU 1: GEOFENCING GPS & AKSI PRESENSI CEPAT -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- INFORMASI JADWAL JAM KERJA -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
+                                    <i class="fa-solid fa-clock text-indigo-400 mr-2"></i> Jam Kerja Hari Ini
+                                </span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isSunday ? 'bg-rose-900/30 text-rose-400 border border-rose-800/50' : 'bg-emerald-900/30 text-emerald-400 border border-emerald-800/50'}">
+                                    ${isSunday ? 'HARI LIBUR (AHAD)' : 'HARI KERJA'}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                    <span class="text-slate-500 block text-[10px] uppercase font-bold">Batas Jam Masuk</span>
+                                    <span class="text-white font-mono font-bold text-base mt-0.5 block">${isSunday ? '-' : schoolSettings.clockInLimit + ' WITA'}</span>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                    <span class="text-slate-500 block text-[10px] uppercase font-bold">Toleransi</span>
+                                    <span class="${isSunday ? 'text-slate-400' : 'text-amber-400'} font-mono font-bold text-base mt-0.5 block">${isSunday ? '-' : schoolSettings.lateTolerance + ' Menit'}</span>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 col-span-2">
+                                    <span class="text-slate-500 block text-[10px] uppercase font-bold">Batas Pulang Minimal</span>
+                                    <span class="${isSunday ? 'text-slate-400' : 'text-indigo-400'} font-mono font-bold text-base mt-0.5 block">${isSunday ? '-' : schoolSettings.clockOutMin + ' WITA'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-slate-400 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800 italic">
+                            <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i> ${isSunday ? 'Hari Ahad / Minggu adalah hari libur madrasah. Presensi tidak aktif (-).' : 'Kehadiran di atas jam 07:30 WITA otomatis tercatat sebagai Terlambat.'}
+                        </p>
+                    </div>
+
+                    <!-- GEOFENCING VALIDATION RADAR -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
+                                    <i class="fa-solid fa-location-crosshairs text-indigo-400 mr-2"></i> Geofencing GPS
+                                </span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isInside ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-800/50' : 'bg-rose-900/30 text-rose-400 border border-rose-800/50'}">
+                                    ${isInside ? 'DALAM RADIUS' : 'LUAR RADIUS'}
+                                </span>
+                            </div>
+
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center space-y-1">
+                                <span class="text-[11px] text-slate-400">Jarak Anda ke Titik Madrasah:</span>
+                                <div class="text-3xl font-black font-mono ${isInside ? 'text-emerald-400' : 'text-rose-400'}">
+                                    ${gpsState.distance} <span class="text-sm font-normal text-slate-400">meter</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500">Radius Maksimal Diizinkan: <b class="text-white">${schoolSettings.radius}m</b></p>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Uji Sensor GPS & Simulasi -->
+                        <div class="space-y-2 pt-1 border-t border-slate-800">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Uji Sensor Lokasi:</span>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="window.setPresensiGpsMode('REAL')" class="p-2 rounded-lg text-[10px] font-bold transition flex flex-col items-center justify-center border ${gpsState.mode === 'REAL' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'}">
+                                    <i class="fa-solid fa-crosshairs text-xs mb-1"></i> GPS Asli
+                                </button>
+                                <button onclick="window.setPresensiGpsMode('SIM_IN')" class="p-2 rounded-lg text-[10px] font-bold transition flex flex-col items-center justify-center border ${gpsState.mode === 'SIM_IN' ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-950 text-emerald-400 border-slate-800 hover:border-slate-700'}">
+                                    <i class="fa-solid fa-circle-check text-xs mb-1"></i> Sim. Masuk
+                                </button>
+                                <button onclick="window.setPresensiGpsMode('SIM_OUT')" class="p-2 rounded-lg text-[10px] font-bold transition flex flex-col items-center justify-center border ${gpsState.mode === 'SIM_OUT' ? 'bg-rose-600 text-white border-rose-500' : 'bg-slate-950 text-rose-400 border-slate-800 hover:border-slate-700'}">
+                                    <i class="fa-solid fa-circle-xmark text-xs mb-1"></i> Sim. Luar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TOMBOL AKSI PRESENSI HARI INI -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
+                                    <i class="fa-solid fa-calendar-day text-indigo-400 mr-2"></i> Presensi Hari Ini
+                                </span>
+                                <span class="text-xs font-mono font-bold bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-200">
+                                    <i class="fa-regular fa-clock text-slate-400 mr-1"></i>${timeHHMM}
+                                </span>
+                            </div>
+
+                            <div class="my-4">
+                                ${isSunday && !myAttToday ? `
+                                    <div class="bg-slate-950/60 p-4 rounded-xl border border-dashed border-rose-500/30 text-center space-y-1">
+                                        <i class="fa-solid fa-calendar-xmark text-rose-400 text-xl mb-1"></i>
+                                        <p class="text-xs font-bold text-rose-300">Hari Ahad / Minggu (Libur)</p>
+                                        <p class="text-[10px] text-slate-500">Presensi tidak aktif (-). Madrasah libur akhir pekan.</p>
+                                    </div>
+                                ` : myAttToday ? `
+                                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2.5">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-[11px] text-slate-400">Status Anda:</span>
+                                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${myAttToday.status === 'HADIR' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30' : myAttToday.status === 'TERLAMBAT' ? 'bg-amber-950/40 text-amber-400 border border-amber-500/30' : 'bg-indigo-950/40 text-indigo-400 border border-indigo-500/30'}">
+                                                ${myAttToday.status} ${myAttToday.lateMinutes > 0 ? `(${myAttToday.lateMinutes} mnt)` : ''}
+                                            </span>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2 text-center pt-1 border-t border-slate-800/80">
+                                            <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                                                <span class="text-[10px] text-slate-500 uppercase block font-semibold">Jam Masuk</span>
+                                                <span class="text-sm font-mono font-bold text-slate-100">${myAttToday.clockIn || '-'}</span>
+                                            </div>
+                                            <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                                                <span class="text-[10px] text-slate-500 uppercase block font-semibold">Jam Pulang</span>
+                                                <span class="text-sm font-mono font-bold text-slate-100">${myAttToday.clockOut || 'Belum'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <div class="bg-slate-950/60 p-4 rounded-xl border border-dashed border-slate-800 text-center space-y-1">
+                                        <i class="fa-regular fa-clock text-slate-500 text-xl mb-1"></i>
+                                        <p class="text-xs font-bold text-slate-300">Belum Presensi Hari Ini</p>
+                                        <p class="text-[10px] text-slate-500">Pastikan GPS berada dalam radius madrasah sebelum absen.</p>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+
+                        <!-- Tombol Presensi Masuk & Pulang -->
+                        <div class="space-y-2 pt-2">
+                            <button onclick="window.submitClockIn()" ${(myAttToday || isSunday) ? 'disabled' : ''} class="w-full py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition ${(myAttToday || isSunday) ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20'}">
+                                <i class="fa-solid fa-right-to-bracket text-xs"></i>
+                                <span>${isSunday ? 'Libur Hari Ahad (-)' : `Absen Masuk (${timeHHMM})`}</span>
+                            </button>
+                            <button onclick="window.submitClockOut()" ${(!myAttToday || myAttToday.clockOut || isSunday) ? 'disabled' : ''} class="w-full py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition ${(!myAttToday || myAttToday.clockOut || isSunday) ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-800' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}">
+                                <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                                <span>${isSunday ? 'Libur Hari Ahad (-)' : `Absen Pulang (${timeHHMM})`}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- KARTU 2: PENGAJUAN IZIN / SAKIT / DINAS LUAR & STATUS -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- FORM PENGAJUAN IZIN -->
+                    <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                        <h3 class="text-base font-bold text-white flex items-center">
+                            <i class="fa-solid fa-file-signature text-indigo-400 mr-2"></i> Pengajuan Izin / Cuti / Dinas
+                        </h3>
+                        <form id="form-leave-request" onsubmit="window.submitGuruLeave(event)" class="space-y-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-300 uppercase mb-1">Kategori Pengajuan</label>
+                                <select id="leave-type" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white outline-none focus:border-indigo-500">
+                                    <option value="IZIN">IZIN (Keperluan Pribadi / Keluarga)</option>
+                                    <option value="SAKIT">SAKIT (Istirahat Dokter)</option>
+                                    <option value="DINAS LUAR">DINAS LUAR (Tugas Instansi / Pelatihan)</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-300 uppercase mb-1">Tanggal Mulai</label>
+                                    <input type="date" id="leave-start" value="${today}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-300 uppercase mb-1">Tanggal Selesai</label>
+                                    <input type="date" id="leave-end" value="${today}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 uppercase mb-1">Alasan / Keterangan</label>
+                                <textarea id="leave-reason" rows="3" required placeholder="Tuliskan keterangan lengkap pengajuan..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white outline-none focus:border-indigo-500 resize-none"></textarea>
+                            </div>
+                            <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-lg shadow-indigo-600/20 flex items-center justify-center space-x-1.5">
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                                <span>Kirim Permohonan Izin</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- DAFTAR RIWAYAT PENGAJUAN IZIN -->
+                    <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-white flex items-center mb-1">
+                                <i class="fa-solid fa-list-check text-indigo-400 mr-2"></i> Status Pengajuan Izin Anda
+                            </h3>
+                            <p class="text-xs text-slate-400 mb-4">Pantau persetujuan izin atau cuti yang diajukan ke Kepala Madrasah.</p>
+                            ${cachedLeaves.length === 0 ? `<p class="text-xs text-slate-500 italic py-4">Belum ada pengajuan izin yang diajukan.</p>` : `
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs">
+                                        <thead class="text-slate-400 border-b border-slate-800 bg-slate-950">
+                                            <tr>
+                                                <th class="p-2.5">Kategori</th>
+                                                <th class="p-2.5">Tanggal</th>
+                                                <th class="p-2.5">Alasan</th>
+                                                <th class="p-2.5">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-800">
+                                            ${cachedLeaves.map(lv => `
+                                                <tr>
+                                                    <td class="p-2.5 font-bold uppercase"><span class="px-2 py-0.5 rounded text-[10px] ${lv.type === 'SAKIT' ? 'bg-amber-900/30 text-amber-400 border border-amber-800/50' : lv.type === 'DINAS LUAR' ? 'bg-indigo-900/30 text-indigo-400 border border-indigo-800/50' : 'bg-blue-900/30 text-blue-400 border border-blue-800/50'}">${lv.type}</span></td>
+                                                    <td class="p-2.5 font-mono text-slate-300 whitespace-nowrap">${lv.startDate} s/d ${lv.endDate}</td>
+                                                    <td class="p-2.5 text-slate-300 max-w-xs">${lv.reason}</td>
+                                                    <td class="p-2.5 whitespace-nowrap">
+                                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${lv.status === 'APPROVED' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30' : lv.status === 'REJECTED' ? 'bg-rose-950/40 text-rose-400 border border-rose-500/30' : 'bg-amber-950/40 text-amber-400 border border-amber-500/30'}">
+                                                            ${lv.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- KARTU 3: REKAPITULASI & LOG PRESENSI BULANAN -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-white flex items-center">
+                                <i class="fa-solid fa-clock-rotate-left text-indigo-400 mr-2"></i> Rekapitulasi Presensi Kehadiran Guru
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Pantau riwayat jam masuk dan pulang harian serta unduh rekap resmi.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <input type="month" value="${presensiFilterBulan}" onchange="window.setPresensiFilterBulan(this.value)" class="bg-slate-950 border border-slate-700 text-xs text-white rounded-xl px-3 py-2 outline-none focus:border-indigo-500 font-mono">
+                            <button onclick="window.exportPresensiXLSX()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <span>Excel (.xlsx)</span>
+                            </button>
+                            <button onclick="window.exportPresensiPDF()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md shadow-rose-600/20">
+                                <i class="fa-solid fa-file-pdf"></i>
+                                <span>Export PDF</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KARTU STATISTIK RINGKAS -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-slate-400 text-xs block font-medium">Hadir Tepat Waktu</span>
+                                <span class="text-2xl font-black text-emerald-400 mt-1 block">${countHadir} <span class="text-xs font-normal text-slate-500">Hari</span></span>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-900/20 text-emerald-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-user-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-slate-400 text-xs block font-medium">Terlambat</span>
+                                <span class="text-2xl font-black text-amber-400 mt-1 block">${countTerlambat} <span class="text-xs font-normal text-slate-500">Hari</span></span>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-amber-900/20 text-amber-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-user-clock"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-slate-400 text-xs block font-medium">Izin / Sakit / Dinas</span>
+                                <span class="text-2xl font-black text-indigo-400 mt-1 block">${countIzin} <span class="text-xs font-normal text-slate-500">Hari</span></span>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-indigo-900/20 text-indigo-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-envelope-open"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABEL LOG PRESENSI HARIAN -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="text-slate-400 border-b border-slate-800 bg-slate-950">
+                                <tr>
+                                    <th class="p-3">Tanggal</th>
+                                    <th class="p-3">Jam Masuk</th>
+                                    <th class="p-3">Jam Pulang</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">Jarak GPS</th>
+                                    <th class="p-3">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800">
+                                ${filteredLogs.length === 0 ? `
+                                    <tr><td colspan="6" class="p-4 text-center text-slate-500 italic">Belum ada catatan presensi untuk periode ${presensiFilterBulan || 'terpilih'}.</td></tr>
+                                ` : filteredLogs.map(a => `
+                                    <tr class="hover:bg-slate-950/60 transition">
+                                        <td class="p-3 font-mono text-slate-200 font-bold whitespace-nowrap">${a.date}</td>
+                                        <td class="p-3 font-mono text-emerald-400 font-bold whitespace-nowrap">${a.clockIn || '-'}</td>
+                                        <td class="p-3 font-mono text-blue-400 font-bold whitespace-nowrap">${a.clockOut || '-'}</td>
+                                        <td class="p-3 whitespace-nowrap">
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${a.status === 'HADIR' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30' : a.status === 'TERLAMBAT' ? 'bg-amber-950/40 text-amber-400 border border-amber-500/30' : 'bg-indigo-950/40 text-indigo-400 border border-indigo-500/30'}">
+                                                ${a.status}
+                                            </span>
+                                        </td>
+                                        <td class="p-3 text-slate-400 whitespace-nowrap">${a.distance ? a.distance + ' m' : '-'}</td>
+                                        <td class="p-3 text-slate-400">${a.notes || '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
 
         function loadGuruGrades() {
             if (is_preview) {
@@ -1421,6 +3031,9 @@
                         <button onclick="window.switchTab('evaluasi')" id="tab-btn-evaluasi" class="px-4 py-2 rounded-xl text-xs font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap">
                             <i class="fa-solid fa-envelope-open-text mr-1.5"></i> Catatan Evaluasi
                         </button>
+                        <button onclick="window.switchTab('presensi')" id="tab-btn-presensi" class="px-4 py-2 rounded-xl text-xs font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap">
+                            <i class="fa-solid fa-fingerprint mr-1.5"></i> Presensi Guru
+                        </button>
                     </div>
 
                     <div id="content-tab-jurnal" class="space-y-6">
@@ -1463,6 +3076,9 @@
                             <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                                 <h3 class="text-base font-bold text-white"><i class="fa-solid fa-timeline text-indigo-400 mr-2"></i> Riwayat Jurnal Mengajar</h3>
                                 <div class="flex gap-2">
+                                    <button onclick="window.exportJurnalWord()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-lg shadow-blue-600/20" title="Unduh format Microsoft Word (.doc)">
+                                        <i class="fa-solid fa-file-word"></i><span class="hidden sm:inline">Export Word</span>
+                                    </button>
                                     <button onclick="window.exportJurnalPDF()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-lg shadow-rose-600/20">
                                         <i class="fa-solid fa-file-pdf"></i><span class="hidden sm:inline">Export PDF</span>
                                     </button>
@@ -1669,6 +3285,9 @@
                             <div id="ge-questions-container" class="space-y-4"></div>
 
                             <div class="flex flex-wrap gap-2 justify-center bg-slate-900 p-4 rounded-2xl">
+                                <button onclick="window.addGraderSection()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-4 py-2 rounded-lg font-bold transition shadow-md shadow-indigo-600/20 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-folder-plus text-xs"></i><span>+ Pemisah Bagian (A, B, C...)</span>
+                                </button>
                                 <button onclick="window.addGraderQ('PG')" class="bg-slate-800 text-slate-300 text-xs px-4 py-2 rounded-lg font-bold border border-slate-700 hover:bg-slate-700">+ PG</button>
                                 <button onclick="window.addGraderQ('PGK')" class="bg-slate-800 text-slate-300 text-xs px-4 py-2 rounded-lg font-bold border border-slate-700 hover:bg-slate-700">+ PG Kompleks</button>
                                 <button onclick="window.addGraderQ('JODOH')" class="bg-slate-800 text-slate-300 text-xs px-4 py-2 rounded-lg font-bold border border-slate-700 hover:bg-slate-700">+ Menjodohkan</button>
@@ -1702,11 +3321,11 @@
 
                     <!-- MODAL HASIL KOREKSI -->
                     <div id="grader-result-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-                        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
+                        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-sm sm:max-w-md w-full text-center shadow-2xl relative">
                             <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Hasil Evaluasi Otomatis</h3>
                             <div id="res-score" class="text-7xl font-black mb-2 text-emerald-400">100</div>
                             <div id="res-status" class="mb-4 inline-block px-4 py-1 rounded-full text-xs font-bold border bg-emerald-900/30 text-emerald-400 border-emerald-500/50">TUNTAS</div>
-                            <div id="res-detail" class="text-xs text-slate-400 mb-6 bg-slate-950 p-3 rounded-xl border border-slate-800">Skor: 10/10</div>
+                            <div id="res-detail" class="text-xs text-slate-400 mb-6 bg-slate-950 p-3.5 rounded-xl border border-slate-800">Skor: 10/10</div>
                             <div class="flex gap-2">
                                 <button onclick="window.closeGraderModal(true)" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-600/20">
                                     Siswa Berikutnya
@@ -1749,6 +3368,9 @@
                             <div id="guru-eval-list" class="space-y-4 pt-2"></div>
                         </div>
                     </div>
+
+                    <!-- TAB PRESENSI GURU (BARU DITAMBAHKAN) -->
+                    <div id="content-tab-presensi" class="hidden space-y-6"></div>
                 </div>
             `;
         }
@@ -1891,6 +3513,283 @@
             }
         };
 
+        window.exportJurnalWord = function() {
+            let dataToExport = [...cachedJournals];
+            if (jurnalFilterKelas) {
+                dataToExport = dataToExport.filter(j => j.kelas === jurnalFilterKelas);
+            }
+            if (jurnalFilterTanggalMulai) {
+                dataToExport = dataToExport.filter(j => j.tanggal >= jurnalFilterTanggalMulai);
+            }
+            if (jurnalFilterTanggalSelesai) {
+                dataToExport = dataToExport.filter(j => j.tanggal <= jurnalFilterTanggalSelesai);
+            }
+
+            if (dataToExport.length === 0) return window.showToast('Tidak ada jurnal untuk diekspor', 'error');
+
+            window.showToast('Membangun dokumen Word (.doc) Rekap Jurnal...', 'success');
+
+            const groupedByDate = {};
+            dataToExport.forEach(j => {
+                const tgl = j.tanggal || 'Tanpa Tanggal';
+                if (!groupedByDate[tgl]) {
+                    groupedByDate[tgl] = [];
+                }
+                groupedByDate[tgl].push(j);
+            });
+
+            const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
+
+            const getIndoDay = (dStr) => {
+                if (!dStr || dStr === 'Tanpa Tanggal') return '';
+                try {
+                    const p = dStr.split('-');
+                    if (p.length === 3) {
+                        const d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                        return ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][d.getDay()] || '';
+                    }
+                } catch(e) {}
+                return '';
+            };
+
+            const formatIndoDate = (dStr) => {
+                if (!dStr || dStr === 'Tanpa Tanggal') return dStr;
+                try {
+                    const p = dStr.split('-');
+                    if (p.length === 3) {
+                        const d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                    }
+                } catch(e) {}
+                return dStr;
+            };
+
+            let periodeStr = '';
+            if (jurnalFilterTanggalMulai && jurnalFilterTanggalSelesai) {
+                periodeStr = `${formatIndoDate(jurnalFilterTanggalMulai)} sampai ${formatIndoDate(jurnalFilterTanggalSelesai)}`;
+            } else if (jurnalFilterTanggalMulai) {
+                periodeStr = `mulai ${formatIndoDate(jurnalFilterTanggalMulai)}`;
+            } else if (sortedDates.length > 0) {
+                const earliestDate = sortedDates[0];
+                const latestDate = sortedDates[sortedDates.length - 1];
+                periodeStr = `${formatIndoDate(earliestDate)} sampai ${formatIndoDate(latestDate)}`;
+            } else {
+                periodeStr = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            }
+
+            const docCity = schoolSettings.city || 'Banjarmasin';
+            const kamadName = schoolSettings.headmasterName ? schoolSettings.headmasterName : '( .................................................... )';
+            const kamadNip = schoolSettings.headmasterNip ? (schoolSettings.headmasterNip.startsWith('NIP') ? schoolSettings.headmasterNip : 'NIP. ' + schoolSettings.headmasterNip) : 'NIP. -';
+            const todayIndo = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            const teacherName = currentUser.name || currentUser.email || 'Guru Mapel';
+            const kopLines = (schoolSettings.kopInstansi || 'KEMENTERIAN AGAMA REPUBLIK INDONESIA\nKANTOR KEMENTERIAN AGAMA KOTA BANJARMASIN').split('\n');
+
+            const govW = parseInt(schoolSettings.logoGovWidth) || 65;
+            const madW = parseInt(schoolSettings.logoMadrasahWidth) || 65;
+            const guruSig = window.getGuruSignature();
+            const kamadSig = window.getKamadSignature();
+
+            const tableRowsHTML = sortedDates.map((tgl, dIdx) => {
+                const sessions = groupedByDate[tgl];
+                sessions.sort((a, b) => (a.waktu || '').localeCompare(b.waktu || ''));
+                const dayName = getIndoDay(tgl);
+                const dateLabel = formatIndoDate(tgl);
+                const fullDateHeader = `${dayName ? dayName + ', ' : ''}${dateLabel}`;
+
+                return `
+                    <tr style="background-color: ${dIdx % 2 === 0 ? '#ffffff' : '#fcfcfc'}; vertical-align: top;">
+                        <td style="border: 1px solid #334155; padding: 6px 5px; font-weight: bold; text-align: center;">
+                            ${fullDateHeader}
+                        </td>
+                        <td style="border: 1px solid #334155; padding: 0; text-align: center;">
+                            ${sessions.map((s, sIdx) => `
+                                <div style="padding: 5px 3px; font-family: monospace; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                    (${s.waktu || '-'})
+                                </div>
+                            `).join('')}
+                        </td>
+                        <td style="border: 1px solid #334155; padding: 0; text-align: center;">
+                            ${sessions.map((s, sIdx) => `
+                                <div style="padding: 5px 3px; font-weight: 600; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                    ${(s.kelas || '-').replace(/kelas\\s*/i, '')} / ${s.mapel || '-'}
+                                </div>
+                            `).join('')}
+                        </td>
+                        <td style="border: 1px solid #334155; padding: 0;">
+                            ${sessions.map((s, sIdx) => `
+                                <div style="padding: 5px 5px; font-weight: 500; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                    ${s.materi || '-'}
+                                </div>
+                            `).join('')}
+                        </td>
+                        <td style="border: 1px solid #334155; padding: 0;">
+                            ${sessions.map((s, sIdx) => `
+                                <div style="padding: 5px 5px; line-height: 1.25; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                    ${s.tujuan || '-'}
+                                </div>
+                            `).join('')}
+                        </td>
+                        <td style="border: 1px solid #334155; padding: 0;">
+                            ${sessions.map((s, sIdx) => `
+                                <div style="padding: 5px 5px; line-height: 1.25; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                    ${s.metode || '-'}<br>
+                                    <span style="color: #475569;">${s.media || '-'}</span>
+                                </div>
+                            `).join('')}
+                        </td>
+                        <td style="border: 1px solid #334155; padding: 0;">
+                            ${sessions.map((s, sIdx) => `
+                                <div style="padding: 5px 5px; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                    ${s.capaian || '-'}
+                                </div>
+                            `).join('')}
+                        </td>
+                        <td style="border: 1px solid #334155; padding: 0; text-align: center;">
+                            ${sessions.map((s, sIdx) => `
+                                <div style="padding: 5px 3px; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                    ${s.kehadiran || '-'}
+                                </div>
+                            `).join('')}
+                        </td>
+                        <td style="border: 1px solid #334155; padding: 0;">
+                            ${sessions.map((s, sIdx) => `
+                                <div style="padding: 5px 5px; color: ${s.kendala && s.kendala.toLowerCase() !== 'tidak ada' ? '#b91c1c' : '#000000'}; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                    ${s.kendala || '-'}
+                                </div>
+                            `).join('')}
+                        </td>
+                        <td style="border: 1px solid #334155; padding: 0;">
+                            ${sessions.map((s, sIdx) => `
+                                <div style="padding: 5px 5px; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                    ${s.tindakLanjut || '-'}
+                                </div>
+                            `).join('')}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            const wordDocumentHTML = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Rekap Jurnal Mengajar</title>
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <w:WordDocument>
+                            <w:View>Print</w:View>
+                            <w:Zoom>100</w:Zoom>
+                            <w:DoNotOptimizeForBrowser/>
+                        </w:WordDocument>
+                    </xml>
+                    <![endif]-->
+                    <style>
+                        @page Section1 {
+                            size: 841.9pt 595.3pt;
+                            mso-page-orientation: landscape;
+                            margin: 0.5in 0.5in 0.5in 0.5in;
+                            mso-header-margin: 0.5in;
+                            mso-footer-margin: 0.5in;
+                            mso-paper-source: 0;
+                        }
+                        div.Section1 { page: Section1; font-family: Arial, sans-serif; font-size: 9.5pt; color: #000; }
+                        table { border-collapse: collapse; width: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+                        th, td { border: 1px solid #334155; font-size: 9pt; }
+                        th { background-color: #f1f5f9; text-align: center; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="Section1">
+                        <!-- KOP SURAT RESMI -->
+                        <table border="0" cellspacing="0" cellpadding="0" style="width: 100%; border-collapse: collapse; margin-bottom: 14pt; border-bottom: 2.5pt double #000000;">
+                            <tr>
+                                <td style="width: 85pt; text-align: left; vertical-align: middle; border: none; padding-bottom: 6pt;">
+                                    ${schoolSettings.logoGovUrl ? `<img src="${schoolSettings.logoGovUrl}" width="${govW}" height="${govW}" style="width: ${govW}px; height: ${govW}px; max-width: ${govW}px; max-height: ${govW}px;" alt="Logo Pemerintah">` : ''}
+                                </td>
+                                <td style="text-align: center; vertical-align: middle; border: none; padding: 0 10pt 6pt 10pt; line-height: 1.25;">
+                                    ${kopLines.map(line => `<div style="font-size: 11pt; font-weight: bold; text-transform: uppercase;">${line}</div>`).join('')}
+                                    <div style="font-size: 14pt; font-weight: 800; text-transform: uppercase; margin: 2pt 0;">${schoolSettings.name || 'MADRASAH IBTIDAIYAH AL-IRSYAD AL-ISLAMIYYAH'}</div>
+                                    ${schoolSettings.kopAlamat ? `<div style="font-size: 9pt; color: #222222;">${schoolSettings.kopAlamat}</div>` : ''}
+                                </td>
+                                <td style="width: 85pt; text-align: right; vertical-align: middle; border: none; padding-bottom: 6pt;">
+                                    ${schoolSettings.logoMadrasahUrl ? `<img src="${schoolSettings.logoMadrasahUrl}" width="${madW}" height="${madW}" style="width: ${madW}px; height: ${madW}px; max-width: ${madW}px; max-height: ${madW}px;" alt="Logo Madrasah">` : ''}
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- JUDUL DOKUMEN & PERIODE -->
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <h2 style="margin: 0; font-size: 13pt; font-weight: bold; text-transform: uppercase;">REKAPITULASI JURNAL MENGAJAR GURU</h2>
+                            <div style="font-size: 10pt; font-weight: bold; margin-top: 3px;">Guru: ${teacherName}</div>
+                            <div style="font-size: 9pt; color: #333333; margin-top: 2px;">Periode cetak pada ${periodeStr}</div>
+                        </div>
+
+                        <!-- TABEL UTAMA 10 KOLOM -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: fixed;">
+                            <thead>
+                                <tr style="background-color: #f1f5f9; text-align: center;">
+                                    <th style="padding: 6px 4px; width: 11%;">Hari/Tanggal</th>
+                                    <th style="padding: 6px 4px; width: 8%;">Waktu</th>
+                                    <th style="padding: 6px 4px; width: 9%;">Kelas/Mapel</th>
+                                    <th style="padding: 6px 4px; width: 13%;">Bab/Materi</th>
+                                    <th style="padding: 6px 4px; width: 15%;">TP</th>
+                                    <th style="padding: 6px 4px; width: 13%;">Metode & Media</th>
+                                    <th style="padding: 6px 4px; width: 9%;">Capaian</th>
+                                    <th style="padding: 6px 4px; width: 7%;">Kehadiran</th>
+                                    <th style="padding: 6px 4px; width: 7%;">Kendala</th>
+                                    <th style="padding: 6px 4px; width: 8%;">Tindak Lanjut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRowsHTML}
+                            </tbody>
+                        </table>
+
+                        <!-- BLOK TANDA TANGAN 2-BARIS DENGAN GAMBAR TTD / BARCODE (PNG) -->
+                        <table border="0" cellspacing="0" cellpadding="0" style="width: 100%; border-collapse: collapse; margin-top: 20pt; border: none; font-size: 10pt; font-family: Arial, sans-serif;">
+                            <tr>
+                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-bottom: 0;">
+                                    <p style="margin: 0; line-height: 1.3;">&nbsp;</p>
+                                    <p style="margin: 0; line-height: 1.3;">&nbsp;</p>
+                                    <p style="margin: 0; line-height: 1.3; font-weight: normal;">Guru Mapel,</p>
+                                </td>
+                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-bottom: 0;">
+                                    <p style="margin: 0; line-height: 1.3;">Mengetahui,</p>
+                                    <p style="margin: 0; line-height: 1.3;">${docCity}, ${todayIndo}</p>
+                                    <p style="margin: 0; line-height: 1.3; font-weight: normal;">Kepala Madrasah,</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-top: 5pt; height: 50pt;">
+                                    ${guruSig ? `<img src="${guruSig}" width="110" height="55" style="width: 110px; height: 55px; max-height: 55px; max-width: 120px; object-fit: contain; margin: 0 auto; display: block;" alt="TTD Guru"><br>` : `<div style="height: 45pt;">&nbsp;</div>`}
+                                    <p style="margin: 0; font-weight: bold; text-decoration: underline;">${teacherName}</p>
+                                    <p style="margin: 2pt 0 0 0; font-size: 9pt; color: transparent; user-select: none;">&nbsp;</p>
+                                </td>
+                                <td style="width: 50%; text-align: center; vertical-align: bottom; border: none; padding-top: 5pt; height: 50pt;">
+                                    ${kamadSig ? `<img src="${kamadSig}" width="110" height="55" style="width: 110px; height: 55px; max-height: 55px; max-width: 120px; object-fit: contain; margin: 0 auto; display: block;" alt="TTD Kamad"><br>` : `<div style="height: 45pt;">&nbsp;</div>`}
+                                    <p style="margin: 0; font-weight: bold; text-decoration: underline;">${kamadName}</p>
+                                    ${kamadNip && kamadNip !== 'NIP. -' ? `<p style="margin: 2pt 0 0 0; font-size: 9pt; color: #475569;">${kamadNip}</p>` : `<p style="margin: 2pt 0 0 0; font-size: 9pt; color: transparent; user-select: none;">&nbsp;</p>`}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob(['\ufeff', wordDocumentHTML], {
+                type: 'application/msword;charset=utf-8'
+            });
+            const cleanFileName = `Jurnal_Mengajar_${teacherName.replace(/\\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.doc`;
+            const downloadLink = document.createElement("a");
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = cleanFileName;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            window.showToast('Dokumen Word (.doc) berhasil diunduh dan siap diedit!', 'success');
+        };
+
         window.exportJurnalPDF = function() {
             // Menyaring data sesuai filter kelas & rentang tanggal yang sedang aktif
             let dataToExport = [...cachedJournals];
@@ -1906,130 +3805,267 @@
 
             if (dataToExport.length === 0) return window.showToast('Tidak ada jurnal untuk diekspor', 'error');
             
-            window.showToast('Membangun dokumen PDF anti-potong...', 'success');
+            window.showToast('Membangun dokumen PDF Rekap Jurnal Mengajar...', 'success');
 
             const printElement = document.createElement('div');
-            
-            let filterInfo = '';
-            if (jurnalFilterKelas || jurnalFilterTanggalMulai || jurnalFilterTanggalSelesai) {
-                filterInfo = `<p style="margin: 4px 0 0 0; color: #334155; font-size: 11px;">Filter: ${jurnalFilterKelas || 'Semua Kelas'} ${jurnalFilterTanggalMulai ? `| Dari: ${jurnalFilterTanggalMulai}` : ''} ${jurnalFilterTanggalSelesai ? `s/d ${jurnalFilterTanggalSelesai}` : ''}</p>`;
-            }
 
-            let htmlContent = `
-                <div style="width: 100%; max-width: 700px; margin: 0 auto; padding: 15px 20px; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #ffffff; box-sizing: border-box;">
-                    <style>
-                        .pdf-card {
-                            border: 1px solid #94a3b8;
-                            border-radius: 8px;
-                            padding: 14px 16px;
-                            margin-bottom: 14px;
-                            background-color: #f8fafc;
-                            page-break-inside: avoid !important;
-                            break-inside: avoid !important;
-                            display: block;
-                            box-sizing: border-box;
-                        }
-                        .pdf-table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            font-size: 11.5px;
-                            line-height: 1.45;
-                        }
-                        .pdf-table td {
-                            padding: 3px 0;
-                            vertical-align: top;
-                            word-wrap: break-word;
-                            overflow-wrap: break-word;
-                        }
-                    </style>
-                    <div style="text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 12px; margin-bottom: 18px; page-break-inside: avoid; break-inside: avoid;">
-                        <h2 style="margin: 0; color: #0f172a; font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">REKAPITULASI JURNAL MENGAJAR</h2>
-                        <h4 style="margin: 6px 0 0 0; color: #334155; font-size: 13px; font-weight: bold;">Guru: ${currentUser.name || currentUser.email}</h4>
-                        ${filterInfo}
-                        <p style="margin: 4px 0 0 0; color: #64748b; font-size: 10.5px;">Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</p>
-                    </div>
-            `;
-
-            dataToExport.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).forEach(j => {
-                htmlContent += `
-                    <div class="pdf-card">
-                        <table style="width: 100%; border-collapse: collapse; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 10px;">
-                            <tr>
-                                <td style="vertical-align: top; padding-bottom: 6px;">
-                                    <div style="font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 2px;">${j.materi || '-'}</div>
-                                </td>
-                                <td style="vertical-align: top; text-align: right; white-space: nowrap; width: 150px; padding-bottom: 6px;">
-                                    <span style="color: #475569; font-size: 11px; font-weight: bold;">${j.tanggal || ''} (${j.waktu || ''})</span>
-                                </td>
-                            </tr>
-                        </table>
-                        <table class="pdf-table">
-                            <tbody>
-                                <tr>
-                                    <td style="width: 130px; font-weight: bold; color: #1e293b;">Kelas / Mapel</td>
-                                    <td style="width: 10px; font-weight: bold;">:</td>
-                                    <td style="color: #0f172a; font-weight: 600;">${j.kelas || '-'} / ${j.mapel || '-'}</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight: bold; color: #1e293b;">Tujuan</td>
-                                    <td style="font-weight: bold;">:</td>
-                                    <td style="color: #1e293b;">${j.tujuan || '-'}</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight: bold; color: #1e293b;">Metode & Media</td>
-                                    <td style="font-weight: bold;">:</td>
-                                    <td style="color: #1e293b;">${j.metode || '-'} | ${j.media || '-'}</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight: bold; color: #1e293b;">Kehadiran</td>
-                                    <td style="font-weight: bold;">:</td>
-                                    <td style="color: #1e293b;">${j.kehadiran || '-'}</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight: bold; color: #1e293b;">Capaian</td>
-                                    <td style="font-weight: bold;">:</td>
-                                    <td style="color: #1e293b;">${j.capaian || '-'}</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight: bold; color: #b91c1c;">Kendala</td>
-                                    <td style="font-weight: bold; color: #b91c1c;">:</td>
-                                    <td style="color: #b91c1c;">${j.kendala || '-'}</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight: bold; color: #1d4ed8;">Tindak Lanjut</td>
-                                    <td style="font-weight: bold; color: #1d4ed8;">:</td>
-                                    <td style="color: #1d4ed8;">${j.tindakLanjut || '-'}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                `;
-
-                if (j.adminNotes) {
-                    htmlContent += `
-                        <div style="margin-top: 10px; padding: 8px 12px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; page-break-inside: avoid; break-inside: avoid;">
-                            <strong style="color: #1e40af; font-size: 10.5px; text-transform: uppercase; display: block; margin-bottom: 2px;">Catatan Admin / Kamad:</strong>
-                            <p style="margin: 0; font-size: 11px; color: #1e3a8a; font-style: italic;">"${j.adminNotes}"</p>
-                        </div>
-                    `;
+            // Kelompokkan entri jurnal berdasarkan tanggal
+            const groupedByDate = {};
+            dataToExport.forEach(j => {
+                const tgl = j.tanggal || 'Tanpa Tanggal';
+                if (!groupedByDate[tgl]) {
+                    groupedByDate[tgl] = [];
                 }
-
-                htmlContent += `</div>`;
+                groupedByDate[tgl].push(j);
             });
 
-            htmlContent += `</div>`;
+            // Urutkan tanggal secara kronologis (dari tanggal terlama ke tanggal terbaru)
+            const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
+
+            const getIndoDay = (dStr) => {
+                if (!dStr || dStr === 'Tanpa Tanggal') return '';
+                try {
+                    const p = dStr.split('-');
+                    if (p.length === 3) {
+                        const d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                        return ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][d.getDay()] || '';
+                    }
+                } catch(e) {}
+                return '';
+            };
+
+            const formatIndoDate = (dStr) => {
+                if (!dStr || dStr === 'Tanpa Tanggal') return dStr;
+                try {
+                    const p = dStr.split('-');
+                    if (p.length === 3) {
+                        const d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                    }
+                } catch(e) {}
+                return dStr;
+            };
+
+            // Menentukan keterangan teks periode cetak (kronologis dari tanggal awal ke tanggal akhir)
+            let periodeStr = '';
+            if (jurnalFilterTanggalMulai && jurnalFilterTanggalSelesai) {
+                periodeStr = `${formatIndoDate(jurnalFilterTanggalMulai)} sampai ${formatIndoDate(jurnalFilterTanggalSelesai)}`;
+            } else if (jurnalFilterTanggalMulai) {
+                periodeStr = `mulai ${formatIndoDate(jurnalFilterTanggalMulai)}`;
+            } else if (sortedDates.length > 0) {
+                const earliestDate = sortedDates[0];
+                const latestDate = sortedDates[sortedDates.length - 1];
+                periodeStr = `${formatIndoDate(earliestDate)} sampai ${formatIndoDate(latestDate)}`;
+            } else {
+                periodeStr = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            }
+
+            const docCity = schoolSettings.city || 'Banjarmasin';
+            const kamadName = schoolSettings.headmasterName ? schoolSettings.headmasterName : '( .................................................... )';
+            const kamadNip = schoolSettings.headmasterNip ? (schoolSettings.headmasterNip.startsWith('NIP') ? schoolSettings.headmasterNip : 'NIP. ' + schoolSettings.headmasterNip) : 'NIP. -';
+            const todayIndo = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            const teacherName = currentUser.name || currentUser.email || 'Guru Mapel';
+            const guruSig = window.getGuruSignature();
+            const kamadSig = window.getKamadSignature();
+
+            // Pisahkan baris KOP instansi
+            const kopLines = (schoolSettings.kopInstansi || 'KEMENTERIAN AGAMA REPUBLIK INDONESIA\nKANTOR KEMENTERIAN AGAMA KOTA BANJARMASIN').split('\n');
+
+            let htmlContent = `
+                <div style="width: 100%; max-width: 1040px; margin: 0 auto; padding: 20px 25px; font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; box-sizing: border-box;">
+                    
+                    <!-- KOP SURAT RESMI DENGAN LOGO KIRI & KANAN (SCALABLE DARI ADMIN) -->
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; border-bottom: 3px double #000000; padding-bottom: 8px;">
+                        <tr>
+                            <!-- LOGO SEBELAH KIRI (INSTANSI PEMERINTAH / KEMENAG) -->
+                            <td style="width: 15%; text-align: left; vertical-align: middle; padding-bottom: 6px;">
+                                ${schoolSettings.logoGovUrl ? `<img src="${schoolSettings.logoGovUrl}" crossorigin="anonymous" onerror="this.onerror=null;this.src='https://placehold.co/100x100/047857/ffffff?text=KEMENAG';" style="width: ${schoolSettings.logoGovWidth || 65}px; height: auto; max-height: 100px; object-fit: contain; display: inline-block;" alt="Logo Pemerintah">` : ''}
+                            </td>
+                            
+                            <!-- TEKS TENGAH KOP RESMI -->
+                            <td style="width: 70%; text-align: center; vertical-align: middle; padding-bottom: 6px; line-height: 1.25;">
+                                ${kopLines.map(line => `<div style="font-size: 11px; font-weight: bold; text-transform: uppercase; color: #000000; letter-spacing: 0.5px;">${line}</div>`).join('')}
+                                <div style="font-size: 15px; font-weight: 800; text-transform: uppercase; color: #000000; margin: 2px 0; letter-spacing: 0.5px;">${schoolSettings.name || 'MADRASAH IBTIDAIYAH AL-IRSYAD AL-ISLAMIYYAH'}</div>
+                                ${schoolSettings.kopAlamat ? `<div style="font-size: 9.5px; color: #222222; font-weight: normal;">${schoolSettings.kopAlamat}</div>` : ''}
+                            </td>
+                            
+                            <!-- LOGO SEBELAH KANAN (MADRASAH) -->
+                            <td style="width: 15%; text-align: right; vertical-align: middle; padding-bottom: 6px;">
+                                ${schoolSettings.logoMadrasahUrl ? `<img src="${schoolSettings.logoMadrasahUrl}" crossorigin="anonymous" onerror="this.onerror=null;this.src='https://placehold.co/100x100/047857/ffffff?text=MADRASAH';" style="width: ${schoolSettings.logoMadrasahWidth || 65}px; height: auto; max-height: 100px; object-fit: contain; display: inline-block;" alt="Logo Madrasah">` : ''}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- JUDUL DOKUMEN & IDENTITAS -->
+                    <div style="text-align: center; margin-bottom: 14px;">
+                        <h2 style="margin: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #000000;">REKAPITULASI JURNAL MENGAJAR GURU</h2>
+                        <div style="font-size: 11px; font-weight: bold; color: #000000; margin-top: 4px;">Guru: ${teacherName}</div>
+                        <div style="font-size: 10px; color: #333333; margin-top: 2px;">Periode cetak pada ${periodeStr}</div>
+                    </div>
+
+                    <!-- TABEL UTAMA 10 KOLOM -->
+                    <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; color: #000000; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; text-align: center; font-weight: bold;">
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 11%;">Hari/Tanggal</th>
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 8%;">Waktu</th>
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 9%;">Kelas/Mapel</th>
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 13%;">Bab/Materi</th>
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 15%;">TP</th>
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 13%;">Metode & Media</th>
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 9%;">Capaian</th>
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 7%;">Kehadiran</th>
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 7%;">Kendala</th>
+                                <th style="border: 1px solid #334155; padding: 6px 4px; width: 8%;">Tindak Lanjut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sortedDates.map((tgl, dIdx) => {
+                                const sessions = groupedByDate[tgl];
+                                sessions.sort((a, b) => (a.waktu || '').localeCompare(b.waktu || ''));
+                                const dayName = getIndoDay(tgl);
+                                const dateLabel = formatIndoDate(tgl);
+                                const fullDateHeader = `${dayName ? dayName + ', ' : ''}${dateLabel}`;
+
+                                return `
+                                    <tr style="background-color: ${dIdx % 2 === 0 ? '#ffffff' : '#fafafa'}; vertical-align: top; page-break-inside: avoid; break-inside: avoid;">
+                                        <!-- KOLOM 1: HARI / TANGGAL -->
+                                        <td style="border: 1px solid #334155; padding: 6px 5px; font-weight: bold; text-align: center;">
+                                            ${fullDateHeader}
+                                        </td>
+
+                                        <!-- KOLOM 2: WAKTU -->
+                                        <td style="border: 1px solid #334155; padding: 0; text-align: center;">
+                                            ${sessions.map((s, sIdx) => `
+                                                <div style="padding: 5px 3px; font-family: monospace; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                                    (${s.waktu || '-'})
+                                                </div>
+                                            `).join('')}
+                                        </td>
+
+                                        <!-- KOLOM 3: KELAS / MAPEL -->
+                                        <td style="border: 1px solid #334155; padding: 0; text-align: center;">
+                                            ${sessions.map((s, sIdx) => `
+                                                <div style="padding: 5px 3px; font-weight: 600; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                                    ${(s.kelas || '-').replace(/kelas\s*/i, '')} / ${s.mapel || '-'}
+                                                </div>
+                                            `).join('')}
+                                        </td>
+
+                                        <!-- KOLOM 4: BAB / MATERI -->
+                                        <td style="border: 1px solid #334155; padding: 0;">
+                                            ${sessions.map((s, sIdx) => `
+                                                <div style="padding: 5px 5px; font-weight: 500; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                                    ${s.materi || '-'}
+                                                </div>
+                                            `).join('')}
+                                        </td>
+
+                                        <!-- KOLOM 5: TP (TUJUAN PEMBELAJARAN) -->
+                                        <td style="border: 1px solid #334155; padding: 0;">
+                                            ${sessions.map((s, sIdx) => `
+                                                <div style="padding: 5px 5px; line-height: 1.25; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                                    ${s.tujuan || '-'}
+                                                </div>
+                                            `).join('')}
+                                        </td>
+
+                                        <!-- KOLOM 6: METODE & MEDIA -->
+                                        <td style="border: 1px solid #334155; padding: 0;">
+                                            ${sessions.map((s, sIdx) => `
+                                                <div style="padding: 5px 5px; line-height: 1.25; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                                    ${s.metode || '-'}<br>
+                                                    <span style="color: #475569;">${s.media || '-'}</span>
+                                                </div>
+                                            `).join('')}
+                                        </td>
+
+                                        <!-- KOLOM 7: CAPAIAN -->
+                                        <td style="border: 1px solid #334155; padding: 0;">
+                                            ${sessions.map((s, sIdx) => `
+                                                <div style="padding: 5px 5px; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                                    ${s.capaian || '-'}
+                                                </div>
+                                            `).join('')}
+                                        </td>
+
+                                        <!-- KOLOM 8: KEHADIRAN -->
+                                        <td style="border: 1px solid #334155; padding: 0; text-align: center;">
+                                            ${sessions.map((s, sIdx) => `
+                                                <div style="padding: 5px 3px; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                                    ${s.kehadiran || '-'}
+                                                </div>
+                                            `).join('')}
+                                        </td>
+
+                                        <!-- KOLOM 9: KENDALA -->
+                                        <td style="border: 1px solid #334155; padding: 0;">
+                                            ${sessions.map((s, sIdx) => `
+                                                <div style="padding: 5px 5px; color: ${s.kendala && s.kendala.toLowerCase() !== 'tidak ada' ? '#b91c1c' : '#000000'}; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                                    ${s.kendala || '-'}
+                                                </div>
+                                            `).join('')}
+                                        </td>
+
+                                        <!-- KOLOM 10: TINDAK LANJUT -->
+                                        <td style="border: 1px solid #334155; padding: 0;">
+                                            ${sessions.map((s, sIdx) => `
+                                                <div style="padding: 5px 5px; ${sIdx < sessions.length - 1 ? 'border-bottom: 1px solid #cbd5e1;' : ''}">
+                                                    ${s.tindakLanjut || '-'}
+                                                </div>
+                                            `).join('')}
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+
+                    <!-- BLOK TANDA TANGAN DENGAN GAMBAR TTD / BARCODE (PNG) -->
+                    <table style="width: 100%; border: none; margin-top: 30px; font-size: 11px; page-break-inside: avoid; break-inside: avoid;">
+                        <tr>
+                            <!-- SISI KIRI: GURU MAPEL -->
+                            <td style="width: 50%; text-align: center; vertical-align: top; border: none; padding: 0;">
+                                <p style="margin: 0; color: transparent; user-select: none;">&nbsp;</p>
+                                <p style="margin: 2px 0 0 0; color: transparent; user-select: none;">&nbsp;</p>
+                                <p style="margin: 2px 0 0 0; font-weight: normal;">Guru Mapel,</p>
+                                <div style="height: 65px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                    ${guruSig ? `<img src="${guruSig}" crossorigin="anonymous" style="max-height: 60px; max-width: 140px; object-fit: contain; margin: 0 auto; display: block;" alt="TTD Guru">` : ''}
+                                </div>
+                                <p style="margin: 0; font-weight: bold; text-decoration: underline;">${teacherName}</p>
+                                <p style="margin: 2px 0 0 0; font-size: 10px; color: transparent; user-select: none;">&nbsp;</p>
+                            </td>
+
+                            <!-- SISI KANAN: MENGETAHUI KEPALA MADRASAH -->
+                            <td style="width: 50%; text-align: center; vertical-align: top; border: none; padding: 0;">
+                                <p style="margin: 0;">Mengetahui,</p>
+                                <p style="margin: 2px 0 0 0;">${docCity}, ${todayIndo}</p>
+                                <p style="margin: 2px 0 0 0; font-weight: normal;">Kepala Madrasah,</p>
+                                <div style="height: 65px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                    ${kamadSig ? `<img src="${kamadSig}" crossorigin="anonymous" style="max-height: 60px; max-width: 140px; object-fit: contain; margin: 0 auto; display: block;" alt="TTD Kamad">` : ''}
+                                </div>
+                                <p style="margin: 0; font-weight: bold; text-decoration: underline;">${kamadName}</p>
+                                ${kamadNip && kamadNip !== 'NIP. -' ? `<p style="margin: 2px 0 0 0; font-size: 10px; color: #475569;">${kamadNip}</p>` : `<p style="margin: 2px 0 0 0; font-size: 10px; color: transparent; user-select: none;">&nbsp;</p>`}
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+            `;
             printElement.innerHTML = htmlContent;
 
+            // KONFIGURASI PDF LANDSCAPE SESUAI STRUKTUR 10 KOLOM
             const opt = {
-                margin:       [0.4, 0.4, 0.4, 0.4],
-                filename:     `Jurnal_Mengajar_${(currentUser.name || 'Guru').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
+                margin:       [0.3, 0.3, 0.3, 0.3],
+                filename:     `Jurnal_Mengajar_${teacherName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0 },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' },
                 pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
             html2pdf().set(opt).from(printElement).save().then(() => {
-                window.showToast('Dokumen PDF berhasil diunduh dengan rapi!', 'success');
+                window.showToast('Dokumen PDF Rekap Jurnal berhasil diunduh lengkap dengan tanda tangan!', 'success');
             });
         };
 
@@ -2314,6 +4350,20 @@
             renderEditorQuestions();
         };
 
+        window.addGraderSection = function() {
+            const existingSections = editorQuestions.filter(q => q.isSection);
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const nextLetter = alphabet[existingSections.length % 26] || 'A';
+            editorQuestions.push({
+                id: 'sec_' + Date.now(),
+                isSection: true,
+                letter: nextLetter,
+                title: `Bagian ${nextLetter}: `
+            });
+            renderEditorQuestions();
+            window.showToast(`Pemisah Bagian ${nextLetter} berhasil ditambahkan!`, 'success');
+        };
+
         window.addGraderQ = function(type) {
             const q = { id: 'q_' + Date.now(), type, weight: 1 };
             if (type === 'PG') q.key = 'A';
@@ -2334,13 +4384,40 @@
         function renderEditorQuestions() {
             const c = document.getElementById('ge-questions-container');
             c.innerHTML = '';
+            
+            let currentSecLetter = 'A';
+            let qNumInSection = 1;
+            const hasSections = editorQuestions.some(q => q.isSection);
+
             editorQuestions.forEach((q, idx) => {
+                if (q.isSection) {
+                    currentSecLetter = q.letter || 'A';
+                    qNumInSection = 1;
+                    const el = document.createElement('div');
+                    el.className = 'bg-gradient-to-r from-indigo-950/80 via-slate-900 to-indigo-950/80 border border-indigo-500/50 p-4 rounded-xl flex items-center justify-between gap-3 shadow-md my-3';
+                    el.innerHTML = `
+                        <div class="flex items-center gap-3 flex-1">
+                            <span class="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow">${q.letter || '•'}</span>
+                            <div class="flex-1">
+                                <label class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1">Pemisah Bagian Soal (Nomor Soal Mulai Dari 1 Kembali)</label>
+                                <input type="text" value="${q.title || ''}" oninput="window.updateGQ(${idx}, 'title', this.value)" placeholder="Contoh: Bagian A: Pilihan Ganda / Bagian B: Isian Singkat" class="w-full bg-slate-950 border border-indigo-500/30 rounded-lg px-3 py-1.5 text-xs text-white font-bold outline-none focus:border-indigo-400">
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.removeGraderQ(${idx})" class="text-rose-400 hover:text-white p-2 transition" title="Hapus Pemisah Bagian"><i class="fa-solid fa-trash text-xs"></i></button>
+                    `;
+                    c.appendChild(el);
+                    return;
+                }
+
                 const el = document.createElement('div');
                 el.className = 'bg-slate-950 p-5 rounded-xl border border-slate-800';
                 
+                const qLabel = hasSections ? `Bagian ${currentSecLetter} &bull; Soal ${qNumInSection}` : `Soal ${idx + 1}`;
+                qNumInSection++;
+
                 let html = `
                     <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
-                        <span class="font-bold text-sm text-slate-300">Soal ${idx + 1} <span class="bg-blue-900/50 text-blue-400 text-[10px] px-2 py-0.5 rounded ml-2">${q.type}</span></span>
+                        <span class="font-bold text-sm text-slate-300">${qLabel} <span class="bg-blue-900/50 text-blue-400 text-[10px] px-2 py-0.5 rounded ml-2">${q.type}</span></span>
                         <button onclick="window.removeGraderQ(${idx})" class="text-rose-400 hover:text-white"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
                     <textarea oninput="window.updateGQ(${idx}, 'text', this.value)" placeholder="Teks pertanyaan / konteks soal..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500 mb-3">${q.text || ''}</textarea>
@@ -2459,10 +4536,48 @@
             document.getElementById('gk-student').value = '';
             
             const c = document.getElementById('gk-answers-container');
-            c.innerHTML = e.questions.map((q, idx) => {
-                let html = `<div class="bg-slate-950 p-5 rounded-xl border border-slate-800 grader-item" data-idx="${idx}">
+            const hasSections = (e.questions || []).some(q => q.isSection);
+            let currentSecId = 'sec_default';
+            let currentSecLetter = 'A';
+            let currentSecTitle = 'Bagian Utama';
+            let qNumInSection = 1;
+
+            let htmlList = '';
+            (e.questions || []).forEach((q, idx) => {
+                if (q.isSection) {
+                    currentSecId = q.id || `sec_${idx}`;
+                    currentSecLetter = q.letter || 'A';
+                    currentSecTitle = q.title || `Bagian ${currentSecLetter}`;
+                    qNumInSection = 1;
+                    htmlList += `
+                        <div class="section-banner bg-gradient-to-r from-indigo-950/80 via-slate-900 to-indigo-950/80 border border-indigo-500/40 p-3.5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-6 mb-3" data-secid="${currentSecId}">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow">${currentSecLetter}</span>
+                                <div>
+                                    <h5 class="text-xs font-bold text-white uppercase tracking-wider">${currentSecTitle}</h5>
+                                    <span class="text-[10px] text-slate-400">Poin Evaluasi ${currentSecLetter}</span>
+                                </div>
+                            </div>
+                            <div id="badge-sec-${currentSecId}" class="section-score-badge text-xs font-mono font-bold px-3 py-1 rounded-lg bg-slate-950 text-indigo-300 border border-indigo-500/30">
+                                <span class="text-slate-500 font-normal">Belum dinilai</span>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const displayNum = hasSections ? qNumInSection : (idx + 1);
+                const displayPrefix = hasSections ? `Bagian ${currentSecLetter} &bull; ` : '';
+                qNumInSection++;
+
+                let html = `<div class="bg-slate-950 p-5 rounded-xl border border-slate-800 grader-item transition-all" data-idx="${idx}" data-secid="${currentSecId}" data-secletter="${currentSecLetter}" data-sectitle="${currentSecTitle}">
                     <div class="flex justify-between items-center mb-3">
-                        <span class="font-bold text-sm text-slate-300">Soal ${idx+1} <span class="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-[10px] ml-2 uppercase">${q.type}</span></span>
+                        <span class="font-bold text-sm text-slate-300">
+                            <span class="text-indigo-400 font-semibold text-xs">${displayPrefix}</span>Soal ${displayNum} 
+                            <span class="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-[10px] ml-2 uppercase">${q.type}</span>
+                            <span class="text-[10px] text-slate-500 ml-1">(${q.weight || 1} Poin)</span>
+                        </span>
+                        <span class="q-verdict-badge text-xs font-bold hidden"></span>
                     </div>
                     ${q.text ? `<div class="text-xs text-slate-400 mb-4 whitespace-pre-wrap bg-slate-900 p-3 rounded-lg">${q.text}</div>` : ''}`;
                 
@@ -2491,9 +4606,9 @@
                 else if(q.type === 'TT') {
                     html += `<div class="flex gap-2 ans-tt">` + ['Tepat','Tidak Tepat'].map(opt => `<button onclick="window.gk_selectTT(this)" data-val="${opt}" class="px-4 py-2 rounded-lg font-bold text-slate-400 bg-slate-900 border border-slate-700 hover:bg-slate-800 transition">${opt}</button>`).join('') + `</div>`;
                 }
-                return html + `</div>`;
-            }).join('');
-            
+                htmlList += html + `</div>`;
+            });
+            c.innerHTML = htmlList;
             window.navGrader('koreksi');
         };
 
@@ -2503,7 +4618,6 @@
             btn.classList.remove('bg-slate-900', 'text-slate-400', 'border-slate-700'); btn.classList.add('bg-blue-600', 'text-white', 'border-transparent'); btn.dataset.sel = 'true';
         };
 
-        /* PERBAIKAN BUG: Fungsi PGK yang sebelumnya hilang */
         window.gk_togglePGK = function(btn) {
             if (btn.dataset.sel === 'true') {
                 btn.classList.remove('bg-emerald-600', 'text-white', 'border-transparent');
@@ -2516,7 +4630,6 @@
             }
         };
 
-        /* FUNGSI BARU: Menerapkan bobot ke semua soal berdasarkan jenisnya */
         window.applyBulkWeights = function() {
             if(editorQuestions.length === 0) return window.showToast('Belum ada soal untuk diatur poinnya!', 'error');
             
@@ -2530,7 +4643,7 @@
             };
             
             editorQuestions.forEach(q => {
-                if (bw[q.type] !== undefined) {
+                if (!q.isSection && bw[q.type] !== undefined) {
                     q.weight = bw[q.type];
                 }
             });
@@ -2558,6 +4671,7 @@
             const e = graderExams.find(x => x.id === currentExamId);
             const items = document.querySelectorAll('.grader-item');
             let totalScore = 0, maxScore = 0;
+            const sectionStats = {};
 
             items.forEach(item => {
                 const idx = parseInt(item.dataset.idx);
@@ -2593,6 +4707,61 @@
                     if(sel && sel.dataset.val === q.key) earned = w;
                 }
                 totalScore += earned;
+
+                // Visual feedback per-soal
+                const vBadge = item.querySelector('.q-verdict-badge');
+                item.classList.remove('border-emerald-500/60', 'border-amber-500/60', 'border-rose-500/60', 'border-slate-800');
+                if (earned === w) {
+                    item.classList.add('border-emerald-500/60');
+                    if (vBadge) {
+                        vBadge.innerHTML = `<span class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-check"></i> Benar (${earned} Poin)</span>`;
+                        vBadge.classList.remove('hidden');
+                    }
+                } else if (earned > 0) {
+                    item.classList.add('border-amber-500/60');
+                    if (vBadge) {
+                        vBadge.innerHTML = `<span class="text-amber-400 flex items-center gap-1"><i class="fa-solid fa-circle-minus"></i> Sebagian (${earned.toFixed(1)} Poin)</span>`;
+                        vBadge.classList.remove('hidden');
+                    }
+                } else {
+                    item.classList.add('border-rose-500/60');
+                    if (vBadge) {
+                        vBadge.innerHTML = `<span class="text-rose-400 flex items-center gap-1"><i class="fa-solid fa-xmark"></i> Salah (0 Poin)</span>`;
+                        vBadge.classList.remove('hidden');
+                    }
+                }
+
+                // Agregasi per-bagian (Poin A, B, C...)
+                const secId = item.dataset.secid || 'sec_default';
+                const secLetter = item.dataset.secletter || 'A';
+                const secTitle = item.dataset.sectitle || `Bagian ${secLetter}`;
+                if (!sectionStats[secId]) {
+                    sectionStats[secId] = {
+                        id: secId,
+                        letter: secLetter,
+                        title: secTitle,
+                        totalQ: 0,
+                        correctQ: 0,
+                        earnedScore: 0,
+                        maxScore: 0
+                    };
+                }
+                sectionStats[secId].totalQ++;
+                if (earned === w) sectionStats[secId].correctQ++;
+                sectionStats[secId].earnedScore += earned;
+                sectionStats[secId].maxScore += w;
+            });
+
+            // Update badge nilai pada setiap pemisah bagian di lembar koreksi
+            Object.values(sectionStats).forEach(s => {
+                const badge = document.getElementById(`badge-sec-${s.id}`);
+                if (badge) {
+                    badge.innerHTML = `
+                        <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check-circle mr-1"></i>Benar: ${s.correctQ}/${s.totalQ}</span>
+                        <span class="text-slate-400 mx-1.5">&bull;</span>
+                        <span class="text-indigo-300 font-mono font-bold">Skor: ${s.earnedScore.toFixed(1)}/${s.maxScore}</span>
+                    `;
+                }
             });
 
             const final = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
@@ -2602,8 +4771,34 @@
             document.getElementById('res-score').className = `text-7xl font-black mb-2 ${isTuntas ? 'text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]' : 'text-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]'}`;
             const statEl = document.getElementById('res-status');
             statEl.textContent = isTuntas ? 'TUNTAS' : 'REMEDIAL';
-            statEl.className = `mb-6 inline-block px-4 py-1 rounded-full text-xs font-bold border ${isTuntas ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/50' : 'bg-rose-900/30 text-rose-400 border-rose-500/50'}`;
-            document.getElementById('res-detail').innerHTML = `Skor Mentah: <b class="text-white">${totalScore.toFixed(2)}</b> / ${maxScore}`;
+            statEl.className = `mb-4 inline-block px-4 py-1 rounded-full text-xs font-bold border ${isTuntas ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/50' : 'bg-rose-900/30 text-rose-400 border-rose-500/50'}`;
+            
+            const secKeys = Object.keys(sectionStats);
+            let secBreakdownHTML = '';
+            if (secKeys.length > 0 && secKeys.some(k => k !== 'sec_default')) {
+                secBreakdownHTML = `
+                    <div class="mt-3 pt-2.5 border-t border-slate-800 space-y-1.5 text-left">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rincian Benar Per Bagian:</span>
+                        ${Object.values(sectionStats).map(s => `
+                            <div class="flex justify-between items-center text-xs bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-800">
+                                <span class="font-bold text-slate-200 truncate max-w-[140px]">${s.title}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-emerald-400 font-bold">Benar: ${s.correctQ}/${s.totalQ}</span>
+                                    <span class="text-indigo-300 font-mono text-[11px]">(${s.earnedScore.toFixed(1)}/${s.maxScore} Poin)</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            document.getElementById('res-detail').innerHTML = `
+                <div class="flex justify-between items-center text-xs">
+                    <span>Total Skor Mentah:</span>
+                    <b class="text-white font-mono text-sm">${totalScore.toFixed(2)} / ${maxScore}</b>
+                </div>
+                ${secBreakdownHTML}
+            `;
 
             const dateStr = new Date().toISOString().split('T')[0];
             const syncTopik = e.topic ? `Ujian: ${e.title} (${e.topic})` : `Ujian: ${e.title}`;
@@ -2666,6 +4861,15 @@
                     b.dataset.sel = 'false';
                 });
                 document.querySelectorAll('.ans-jodoh input, .ans-isian').forEach(i => i.value = '');
+                document.querySelectorAll('.grader-item').forEach(el => {
+                    el.classList.remove('border-emerald-500/60', 'border-amber-500/60', 'border-rose-500/60');
+                    el.classList.add('border-slate-800');
+                    const vb = el.querySelector('.q-verdict-badge');
+                    if (vb) { vb.innerHTML = ''; vb.classList.add('hidden'); }
+                });
+                document.querySelectorAll('.section-score-badge').forEach(el => {
+                    el.innerHTML = '<span class="text-slate-500 font-normal">Belum dinilai</span>';
+                });
                 window.scrollTo({top: 0, behavior: 'smooth'});
             }
         };
