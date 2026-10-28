@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EJURNAL - Portal Akademik & Omniscient Grader</title>
 	<link rel="icon" type="image/png" href="https://i.ibb.co.com/676xL3yn/MI-AL-IRSYAD-AL-ISLAMIYYAH-20260604-173251-0000.png">
-	
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -140,27 +139,35 @@
 
         /* Penyesuaian Teks Berwarna agar Tajam (Kontras Tinggi) di Mode Terang */
         html:not(.dark) .text-emerald-400,
-        html:not(.dark) .text-emerald-300 {
+        html:not(.dark) .text-emerald-300,
+        html:not(.dark) .text-emerald-200 {
             color: #047857 !important;
         }
         html:not(.dark) .text-indigo-400,
-        html:not(.dark) .text-indigo-300 {
-            color: #4338ca !important;
+        html:not(.dark) .text-indigo-300,
+        html:not(.dark) .text-indigo-200,
+        html:not(.dark) .text-indigo-100 {
+            color: #3730a3 !important;
         }
         html:not(.dark) .text-blue-400,
-        html:not(.dark) .text-blue-300 {
+        html:not(.dark) .text-blue-300,
+        html:not(.dark) .text-blue-200,
+        html:not(.dark) .text-blue-100 {
             color: #1d4ed8 !important;
         }
         html:not(.dark) .text-rose-400,
-        html:not(.dark) .text-rose-300 {
+        html:not(.dark) .text-rose-300,
+        html:not(.dark) .text-rose-200 {
             color: #be123c !important;
         }
         html:not(.dark) .text-amber-400,
-        html:not(.dark) .text-amber-300 {
+        html:not(.dark) .text-amber-300,
+        html:not(.dark) .text-amber-200 {
             color: #b45309 !important;
         }
         html:not(.dark) .text-purple-400,
-        html:not(.dark) .text-purple-300 {
+        html:not(.dark) .text-purple-300,
+        html:not(.dark) .text-purple-200 {
             color: #7e22ce !important;
         }
 
@@ -230,6 +237,11 @@
             background-color: #eef2ff !important;
             border-color: #c7d2fe !important;
             color: #4338ca !important;
+        }
+        html:not(.dark) .bg-indigo-500\/30 {
+            background-color: #e0e7ff !important;
+            border-color: #a5b4fc !important;
+            color: #3730a3 !important;
         }
         html:not(.dark) .bg-emerald-900\/20,
         html:not(.dark) .bg-emerald-900\/30 {
@@ -988,7 +1000,7 @@
                                       return `
                                         <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 rounded-xl gap-2 transition-all ${isToday ? 'bg-indigo-950/60 border border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40' : 'bg-slate-900 border border-slate-800'}">
                                             <div class="flex items-center gap-3 flex-wrap">
-                                                <span class="text-[10px] font-bold uppercase px-2 py-1 rounded border whitespace-nowrap ${isToday ? 'text-indigo-200 bg-indigo-500/30 border-indigo-500/50' : 'text-blue-400 bg-blue-900/20 border-blue-800/50'}">${s.hari}</span>
+                                                <span class="text-[10px] font-bold uppercase px-2 py-1 rounded border whitespace-nowrap ${isToday ? 'text-indigo-700 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-500/30 border-indigo-300 dark:border-indigo-500/50' : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50'}">${s.hari}</span>
                                                 ${isToday ? '<span class="text-[9px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">✨ Hari Ini</span>' : ''}
                                                 <span class="text-[10px] text-slate-300 font-bold bg-slate-950 px-2 py-1 rounded border border-slate-800">Jam ke-${s.jamKe}</span>
                                                 <span class="text-xs text-slate-300 font-mono bg-slate-950 px-2 py-1 rounded border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1"></i>${s.waktu}</span>
@@ -1834,7 +1846,7 @@
                 return `
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl gap-2 transition-all ${isToday ? 'bg-indigo-950/60 border border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/40' : 'bg-slate-950 border border-slate-800'}">
                         <div class="flex items-center gap-2.5 flex-wrap flex-1">
-                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border whitespace-nowrap ${isToday ? 'text-indigo-200 bg-indigo-500/30 border-indigo-500/50' : 'text-blue-400 bg-blue-900/20 border-blue-800/50'}">${s.hari}</span>
+                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border whitespace-nowrap ${isToday ? 'text-indigo-700 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-500/30 border-indigo-300 dark:border-indigo-500/50' : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50'}">${s.hari}</span>
                             ${isToday ? '<span class="text-[9px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">✨ Hari Ini</span>' : ''}
                             <span class="text-[10px] text-slate-300 font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Jam ke-${s.jamKe}</span>
                             <span class="text-xs text-slate-300 font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800 whitespace-nowrap"><i class="fa-regular fa-clock text-slate-500 mr-1"></i>${s.waktu}</span>
