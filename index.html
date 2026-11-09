@@ -421,7 +421,7 @@
             lat: -3.319420,
             lng: 114.590715,
             distance: 16,
-            mode: 'SIM_IN',
+            mode: is_preview ? 'SIM_IN' : 'REAL',
             lastChecked: new Date().toLocaleTimeString('id-ID')
         };
         let presensiFilterBulan = new Date().toISOString().slice(0, 7);
@@ -520,6 +520,10 @@
                         localStorage.setItem('omni_school_settings', JSON.stringify(schoolSettings));
                     }
                 } catch(e) {}
+            }
+            if (!is_preview) {
+                // Di mode deploy, aktifkan pembacaan GPS Asli perangkat secara otomatis
+                window.setPresensiGpsMode('REAL', true);
             }
             if (is_preview) {
                 currentUser = { uid: 'mock-guru-id', email: 'saprudin@ud.in', name: 'Saprudin, S.Ag', role: 'guru' };
@@ -800,6 +804,9 @@
                 }
             });
             if (tab === 'presensi') {
+                if (!is_preview) {
+                    window.setPresensiGpsMode('REAL', true);
+                }
                 renderPresensiUI();
             }
         };
@@ -2028,11 +2035,13 @@
             }
         }
 
-        window.setPresensiGpsMode = function(mode) {
+        window.setPresensiGpsMode = function(mode, silent = false) {
             if (mode === 'REAL') {
                 if (!navigator.geolocation) {
-                    return window.showToast('Geolocation tidak didukung pada peramban ini.', 'error');
+                    if (!silent) window.showToast('Geolocation tidak didukung pada peramban ini.', 'error');
+                    return;
                 }
+                if (!silent) window.showToast('Membaca GPS Asli perangkat...', 'info');
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
                         const lat = pos.coords.latitude;
@@ -2045,15 +2054,20 @@
                             mode: 'REAL',
                             lastChecked: new Date().toLocaleTimeString('id-ID')
                         };
-                        window.showToast(`GPS Asli terbaca. Jarak: ${dist} meter ke madrasah.`, dist <= schoolSettings.radius ? 'success' : 'error');
+                        if (!silent) {
+                            window.showToast(`GPS Asli terbaca. Jarak: ${dist} meter ke madrasah.`, dist <= schoolSettings.radius ? 'success' : 'error');
+                        }
                         renderPresensiUI();
                     },
                     (err) => {
-                        window.showToast(`Gagal membaca GPS asli (${err.message}). Gunakan simulasi radius.`, 'error');
+                        if (!silent) {
+                            window.showToast(`Gagal membaca GPS asli (${err.message}). Pastikan izin lokasi aktif di peramban.`, 'error');
+                        }
                     },
                     { enableHighAccuracy: true, timeout: 8000 }
                 );
             } else if (mode === 'SIM_IN') {
+                if (!is_preview) return; // Proteksi: Cegah manipulasi simulasi saat live di deploy
                 const lat = schoolSettings.lat + 0.00010;
                 const lng = schoolSettings.lng + 0.00008;
                 const dist = calculateHaversineDistance(lat, lng, schoolSettings.lat, schoolSettings.lng);
@@ -2061,6 +2075,7 @@
                 window.showToast(`Simulasi DALAM Radius aktif (${dist} meter ke madrasah).`, 'success');
                 renderPresensiUI();
             } else if (mode === 'SIM_OUT') {
+                if (!is_preview) return; // Proteksi: Cegah manipulasi simulasi saat live di deploy
                 const lat = schoolSettings.lat + 0.0035;
                 const lng = schoolSettings.lng + 0.0025;
                 const dist = calculateHaversineDistance(lat, lng, schoolSettings.lat, schoolSettings.lng);
@@ -2074,6 +2089,28 @@
             const todayObj = new Date();
             if (todayObj.getDay() === 0) {
                 return window.showToast('Hari Ahad/Minggu adalah hari libur sekolah. Presensi tidak aktif (-).', 'error');
+            }
+
+            // Jika mode produksi/deploy (is_preview === false), baca ulang GPS Asli secara instan
+            if (!is_preview && navigator.geolocation) {
+                window.showToast('Memverifikasi titik GPS Asli perangkat Anda...', 'info');
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
+                    });
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const dist = calculateHaversineDistance(lat, lng, schoolSettings.lat, schoolSettings.lng);
+                    gpsState = {
+                        lat,
+                        lng,
+                        distance: dist,
+                        mode: 'REAL',
+                        lastChecked: new Date().toLocaleTimeString('id-ID')
+                    };
+                } catch (err) {
+                    return window.showToast(`Gagal membaca GPS Asli: ${err.message}. Pastikan izin lokasi perangkat diizinkan.`, 'error');
+                }
             }
 
             if (gpsState.distance > schoolSettings.radius) {
@@ -2136,6 +2173,28 @@
             const todayObj = new Date();
             if (todayObj.getDay() === 0) {
                 return window.showToast('Hari Ahad/Minggu adalah hari libur sekolah. Presensi tidak aktif (-).', 'error');
+            }
+
+            // Jika mode produksi/deploy (is_preview === false), baca ulang GPS Asli secara instan
+            if (!is_preview && navigator.geolocation) {
+                window.showToast('Memverifikasi titik GPS Asli perangkat Anda...', 'info');
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
+                    });
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const dist = calculateHaversineDistance(lat, lng, schoolSettings.lat, schoolSettings.lng);
+                    gpsState = {
+                        lat,
+                        lng,
+                        distance: dist,
+                        mode: 'REAL',
+                        lastChecked: new Date().toLocaleTimeString('id-ID')
+                    };
+                } catch (err) {
+                    return window.showToast(`Gagal membaca GPS Asli: ${err.message}. Pastikan izin lokasi perangkat diizinkan.`, 'error');
+                }
             }
 
             if (gpsState.distance > schoolSettings.radius) {
@@ -2511,160 +2570,33 @@
                                     ${gpsState.distance} <span class="text-sm font-normal text-slate-400">meter</span>
                                 </div>
                                 <p class="text-[10px] text-slate-500">Radius Maksimal Diizinkan: <b class="text-white">${schoolSettings.radius}m</b></p>
+                                ${!is_preview ? `<p class="text-[9px] text-indigo-400 font-semibold mt-1"><i class="fa-solid fa-satellite-dish mr-1"></i> Sensor GPS Asli Aktif &bull; Diperiksa: ${gpsState.lastChecked}</p>` : ''}
                             </div>
                         </div>
 
                         <!-- Tombol Uji Sensor GPS & Simulasi -->
                         <div class="space-y-2 pt-1 border-t border-slate-800">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Uji Sensor Lokasi:</span>
-                            <div class="grid grid-cols-3 gap-2">
-                                <button onclick="window.setPresensiGpsMode('REAL')" class="p-2 rounded-lg text-[10px] font-bold transition flex flex-col items-center justify-center border ${gpsState.mode === 'REAL' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'}">
-                                    <i class="fa-solid fa-crosshairs text-xs mb-1"></i> GPS Asli
-                                </button>
-                                <button onclick="window.setPresensiGpsMode('SIM_IN')" class="p-2 rounded-lg text-[10px] font-bold transition flex flex-col items-center justify-center border ${gpsState.mode === 'SIM_IN' ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-950 text-emerald-400 border-slate-800 hover:border-slate-700'}">
-                                    <i class="fa-solid fa-circle-check text-xs mb-1"></i> Sim. Masuk
-                                </button>
-                                <button onclick="window.setPresensiGpsMode('SIM_OUT')" class="p-2 rounded-lg text-[10px] font-bold transition flex flex-col items-center justify-center border ${gpsState.mode === 'SIM_OUT' ? 'bg-rose-600 text-white border-rose-500' : 'bg-slate-950 text-rose-400 border-slate-800 hover:border-slate-700'}">
-                                    <i class="fa-solid fa-circle-xmark text-xs mb-1"></i> Sim. Luar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- TOMBOL AKSI PRESENSI HARI INI -->
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4">
-                        <div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
-                                    <i class="fa-solid fa-calendar-day text-indigo-400 mr-2"></i> Presensi Hari Ini
-                                </span>
-                                <span class="text-xs font-mono font-bold bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-200">
-                                    <i class="fa-regular fa-clock text-slate-400 mr-1"></i>${timeHHMM}
-                                </span>
-                            </div>
-
-                            <div class="my-4">
-                                ${isSunday && !myAttToday ? `
-                                    <div class="bg-slate-950/60 p-4 rounded-xl border border-dashed border-rose-500/30 text-center space-y-1">
-                                        <i class="fa-solid fa-calendar-xmark text-rose-400 text-xl mb-1"></i>
-                                        <p class="text-xs font-bold text-rose-300">Hari Ahad / Minggu (Libur)</p>
-                                        <p class="text-[10px] text-slate-500">Presensi tidak aktif (-). Madrasah libur akhir pekan.</p>
-                                    </div>
-                                ` : myAttToday ? `
-                                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2.5">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-[11px] text-slate-400">Status Anda:</span>
-                                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${myAttToday.status === 'HADIR' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30' : myAttToday.status === 'TERLAMBAT' ? 'bg-amber-950/40 text-amber-400 border border-amber-500/30' : 'bg-indigo-950/40 text-indigo-400 border border-indigo-500/30'}">
-                                                ${myAttToday.status} ${myAttToday.lateMinutes > 0 ? `(${myAttToday.lateMinutes} mnt)` : ''}
-                                            </span>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-2 text-center pt-1 border-t border-slate-800/80">
-                                            <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
-                                                <span class="text-[10px] text-slate-500 uppercase block font-semibold">Jam Masuk</span>
-                                                <span class="text-sm font-mono font-bold text-slate-100">${myAttToday.clockIn || '-'}</span>
-                                            </div>
-                                            <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
-                                                <span class="text-[10px] text-slate-500 uppercase block font-semibold">Jam Pulang</span>
-                                                <span class="text-sm font-mono font-bold text-slate-100">${myAttToday.clockOut || 'Belum'}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ` : `
-                                    <div class="bg-slate-950/60 p-4 rounded-xl border border-dashed border-slate-800 text-center space-y-1">
-                                        <i class="fa-regular fa-clock text-slate-500 text-xl mb-1"></i>
-                                        <p class="text-xs font-bold text-slate-300">Belum Presensi Hari Ini</p>
-                                        <p class="text-[10px] text-slate-500">Pastikan GPS berada dalam radius madrasah sebelum absen.</p>
-                                    </div>
-                                `}
-                            </div>
-                        </div>
-
-                        <!-- Tombol Presensi Masuk & Pulang -->
-                        <div class="space-y-2 pt-2">
-                            <button onclick="window.submitClockIn()" ${(myAttToday || isSunday) ? 'disabled' : ''} class="w-full py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition ${(myAttToday || isSunday) ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20'}">
-                                <i class="fa-solid fa-right-to-bracket text-xs"></i>
-                                <span>${isSunday ? 'Libur Hari Ahad (-)' : `Absen Masuk (${timeHHMM})`}</span>
-                            </button>
-                            <button onclick="window.submitClockOut()" ${(!myAttToday || myAttToday.clockOut || isSunday) ? 'disabled' : ''} class="w-full py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition ${(!myAttToday || myAttToday.clockOut || isSunday) ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-800' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}">
-                                <i class="fa-solid fa-right-from-bracket text-xs"></i>
-                                <span>${isSunday ? 'Libur Hari Ahad (-)' : `Absen Pulang (${timeHHMM})`}</span>
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- KARTU 2: PENGAJUAN IZIN / SAKIT / DINAS LUAR & STATUS -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    
-                    <!-- FORM PENGAJUAN IZIN -->
-                    <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                        <h3 class="text-base font-bold text-white flex items-center">
-                            <i class="fa-solid fa-file-signature text-indigo-400 mr-2"></i> Pengajuan Izin / Cuti / Dinas
-                        </h3>
-                        <form id="form-leave-request" onsubmit="window.submitGuruLeave(event)" class="space-y-3 text-xs">
-                            <div>
-                                <label class="block font-semibold text-slate-300 uppercase mb-1">Kategori Pengajuan</label>
-                                <select id="leave-type" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white outline-none focus:border-indigo-500">
-                                    <option value="IZIN">IZIN (Keperluan Pribadi / Keluarga)</option>
-                                    <option value="SAKIT">SAKIT (Istirahat Dokter)</option>
-                                    <option value="DINAS LUAR">DINAS LUAR (Tugas Instansi / Pelatihan)</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block font-semibold text-slate-300 uppercase mb-1">Tanggal Mulai</label>
-                                    <input type="date" id="leave-start" value="${today}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                ${is_preview ? 'Uji Sensor Lokasi:' : 'Sensor Lokasi GPS Asli:'}
+                            </span>
+                            ${is_preview ? `
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button onclick="window.setPresensiGpsMode('REAL')" class="p-2 rounded-lg text-[10px] font-bold transition flex flex-col items-center justify-center border ${gpsState.mode === 'REAL' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'}">
+                                        <i class="fa-solid fa-crosshairs text-xs mb-1"></i> GPS Asli
+                                    </button>
+                                    <button onclick="window.setPresensiGpsMode('SIM_IN')" class="p-2 rounded-lg text-[10px] font-bold transition flex flex-col items-center justify-center border ${gpsState.mode === 'SIM_IN' ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-950 text-emerald-400 border-slate-800 hover:border-slate-700'}">
+                                        <i class="fa-solid fa-circle-check text-xs mb-1"></i> Sim. Masuk
+                                    </button>
+                                    <button onclick="window.setPresensiGpsMode('SIM_OUT')" class="p-2 rounded-lg text-[10px] font-bold transition flex flex-col items-center justify-center border ${gpsState.mode === 'SIM_OUT' ? 'bg-rose-600 text-white border-rose-500' : 'bg-slate-950 text-rose-400 border-slate-800 hover:border-slate-700'}">
+                                        <i class="fa-solid fa-circle-xmark text-xs mb-1"></i> Sim. Luar
+                                    </button>
                                 </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-300 uppercase mb-1">Tanggal Selesai</label>
-                                    <input type="date" id="leave-end" value="${today}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-slate-300 uppercase mb-1">Alasan / Keterangan</label>
-                                <textarea id="leave-reason" rows="3" required placeholder="Tuliskan keterangan lengkap pengajuan..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white outline-none focus:border-indigo-500 resize-none"></textarea>
-                            </div>
-                            <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-lg shadow-indigo-600/20 flex items-center justify-center space-x-1.5">
-                                <i class="fa-solid fa-paper-plane text-xs"></i>
-                                <span>Kirim Permohonan Izin</span>
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- DAFTAR RIWAYAT PENGAJUAN IZIN -->
-                    <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4 flex flex-col justify-between">
-                        <div>
-                            <h3 class="text-base font-bold text-white flex items-center mb-1">
-                                <i class="fa-solid fa-list-check text-indigo-400 mr-2"></i> Status Pengajuan Izin Anda
-                            </h3>
-                            <p class="text-xs text-slate-400 mb-4">Pantau persetujuan izin atau cuti yang diajukan ke Kepala Madrasah.</p>
-                            ${cachedLeaves.length === 0 ? `<p class="text-xs text-slate-500 italic py-4">Belum ada pengajuan izin yang diajukan.</p>` : `
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left text-xs">
-                                        <thead class="text-slate-400 border-b border-slate-800 bg-slate-950">
-                                            <tr>
-                                                <th class="p-2.5">Kategori</th>
-                                                <th class="p-2.5">Tanggal</th>
-                                                <th class="p-2.5">Alasan</th>
-                                                <th class="p-2.5">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-slate-800">
-                                            ${cachedLeaves.map(lv => `
-                                                <tr>
-                                                    <td class="p-2.5 font-bold uppercase"><span class="px-2 py-0.5 rounded text-[10px] ${lv.type === 'SAKIT' ? 'bg-amber-900/30 text-amber-400 border border-amber-800/50' : lv.type === 'DINAS LUAR' ? 'bg-indigo-900/30 text-indigo-400 border border-indigo-800/50' : 'bg-blue-900/30 text-blue-400 border border-blue-800/50'}">${lv.type}</span></td>
-                                                    <td class="p-2.5 font-mono text-slate-300 whitespace-nowrap">${lv.startDate} s/d ${lv.endDate}</td>
-                                                    <td class="p-2.5 text-slate-300 max-w-xs">${lv.reason}</td>
-                                                    <td class="p-2.5 whitespace-nowrap">
-                                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${lv.status === 'APPROVED' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30' : lv.status === 'REJECTED' ? 'bg-rose-950/40 text-rose-400 border border-rose-500/30' : 'bg-amber-950/40 text-amber-400 border border-amber-500/30'}">
-                                                            ${lv.status}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
+                            ` : `
+                                <div class="grid grid-cols-1 gap-2">
+                                    <button onclick="window.setPresensiGpsMode('REAL')" class="py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 border bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-600/20">
+                                        <i class="fa-solid fa-crosshairs text-xs"></i>
+                                        <span>Perbarui Titik GPS Asli Perangkat</span>
+                                    </button>
                                 </div>
                             `}
                         </div>
