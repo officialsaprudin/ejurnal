@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EJURNAL - Portal Akademik & Omniscient Grader</title>
+    <title>Portal Akademik & Omniscient Grader</title>
 	<link rel="icon" type="image/png" href="https://i.ibb.co.com/676xL3yn/MI-AL-IRSYAD-AL-ISLAMIYYAH-20260604-173251-0000.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -2602,6 +2602,164 @@
                         </div>
                     </div>
 
+                    <!-- KOLOM 3: PANEL AKSI PRESENSI (TOMBOL ABSEN MASUK & PULANG) -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
+                                    <i class="fa-solid fa-fingerprint text-indigo-400 mr-2"></i> Presensi Hari Ini
+                                </span>
+                                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-950 text-indigo-300 border border-slate-800">
+                                    ${timeHHMM} WITA
+                                </span>
+                            </div>
+
+                            ${myAttToday ? `
+                                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2.5">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-slate-400">Status Kehadiran:</span>
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                            myAttToday.status === 'HADIR' ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/30' :
+                                            myAttToday.status === 'TERLAMBAT' ? 'bg-amber-900/40 text-amber-400 border border-amber-500/30' :
+                                            'bg-indigo-900/40 text-indigo-400 border border-indigo-500/30'
+                                        }">
+                                            ${myAttToday.status} ${myAttToday.lateMinutes > 0 ? `(${myAttToday.lateMinutes} mnt)` : ''}
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-center">
+                                        <div class="bg-slate-900 p-2 rounded-lg border border-slate-800">
+                                            <span class="text-[10px] text-slate-500 uppercase font-bold block">Jam Masuk</span>
+                                            <span class="font-mono font-bold text-sm text-emerald-400">${myAttToday.clockIn || '-'}</span>
+                                        </div>
+                                        <div class="bg-slate-900 p-2 rounded-lg border border-slate-800">
+                                            <span class="text-[10px] text-slate-500 uppercase font-bold block">Jam Pulang</span>
+                                            <span class="font-mono font-bold text-sm text-blue-400">${myAttToday.clockOut || 'Belum'}</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 italic">Catatan: ${myAttToday.notes || '-'}</p>
+                                </div>
+                            ` : isSunday ? `
+                                <div class="bg-slate-950 p-4 rounded-xl border border-rose-900/40 text-center space-y-1">
+                                    <i class="fa-solid fa-mug-hot text-rose-400 text-xl mb-1"></i>
+                                    <p class="text-xs font-bold text-rose-300">Hari Ahad / Minggu (Libur)</p>
+                                    <p class="text-[11px] text-slate-400">Presensi tidak aktif pada hari libur (-)</p>
+                                </div>
+                            ` : `
+                                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center space-y-1">
+                                    <i class="fa-solid fa-user-clock text-slate-500 text-xl mb-1"></i>
+                                    <p class="text-xs font-bold text-slate-300">Belum Melakukan Presensi</p>
+                                    <p class="text-[10px] text-slate-400">Pastikan Anda berada dalam radius madrasah (&le; ${schoolSettings.radius}m) untuk melakukan presensi.</p>
+                                </div>
+                            `}
+                        </div>
+
+                        <!-- TOMBOL AKSI PRESENSI -->
+                        <div class="space-y-2.5 pt-1 border-t border-slate-800">
+                            ${!isInside ? `
+                                <div class="bg-rose-950/40 border border-rose-500/40 p-2.5 rounded-xl text-center">
+                                    <p class="text-[11px] font-bold text-rose-300 flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-ban text-xs"></i> Tombol Dikunci: Di Luar Radius
+                                    </p>
+                                    <p class="text-[10px] text-rose-400 mt-0.5">Jarak Anda ${gpsState.distance}m (Batas Maksimal ${schoolSettings.radius}m)</p>
+                                </div>
+                            ` : ''}
+
+                            <!-- Tombol Absen Masuk -->
+                            <button onclick="window.submitClockIn()" 
+                                ${(isSunday || !isInside || myAttToday) ? 'disabled' : ''}
+                                class="w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition ${
+                                    (isSunday || !isInside || myAttToday)
+                                        ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
+                                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25 cursor-pointer'
+                                }">
+                                <i class="fa-solid fa-right-to-bracket"></i>
+                                <span>${myAttToday ? 'Sudah Absen Masuk (' + (myAttToday.clockIn || '-') + ')' : (isSunday ? 'Libur Hari Ahad (-)' : (!isInside ? 'Absen Masuk (Di Luar Radius)' : 'Absen Masuk (' + timeHHMM + ')'))}</span>
+                            </button>
+
+                            <!-- Tombol Absen Pulang -->
+                            <button onclick="window.submitClockOut()" 
+                                ${(isSunday || !isInside || !myAttToday || myAttToday.clockOut || (myAttToday && ['IZIN', 'SAKIT', 'DINAS LUAR'].includes(myAttToday.status))) ? 'disabled' : ''}
+                                class="w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition ${
+                                    (isSunday || !isInside || !myAttToday || myAttToday.clockOut || (myAttToday && ['IZIN', 'SAKIT', 'DINAS LUAR'].includes(myAttToday.status)))
+                                        ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
+                                        : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 cursor-pointer'
+                                }">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                <span>${myAttToday && myAttToday.clockOut ? 'Sudah Absen Pulang (' + myAttToday.clockOut + ')' : (!myAttToday ? 'Absen Pulang (Belum Masuk)' : (!isInside ? 'Absen Pulang (Di Luar Radius)' : 'Absen Pulang (' + timeHHMM + ')'))}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- FORM PENGAJUAN IZIN / SAKIT / DINAS LUAR & RIWAYAT PERMOHONAN -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                        <div class="border-b border-slate-800 pb-3">
+                            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
+                                <i class="fa-solid fa-file-signature text-indigo-400 mr-2"></i> Form Permohonan Izin / Dinas
+                            </h4>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Ajukan izin, sakit atau dinas luar untuk diverifikasi Kepala Madrasah.</p>
+                        </div>
+                        <form id="form-leave-request" onsubmit="window.submitGuruLeave(event)" class="space-y-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Kategori</label>
+                                <select id="leave-type" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500">
+                                    <option value="IZIN">IZIN (Urusan Keluarga/Pribadi)</option>
+                                    <option value="SAKIT">SAKIT (Surat Dokter)</option>
+                                    <option value="DINAS LUAR">DINAS LUAR (Pelatihan/Tugas)</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block font-semibold text-slate-300 mb-1">Mulai</label>
+                                    <input type="date" id="leave-start" value="${today}" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white font-mono outline-none focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-300 mb-1">Selesai</label>
+                                    <input type="date" id="leave-end" value="${today}" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white font-mono outline-none focus:border-indigo-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Alasan / Keterangan</label>
+                                <textarea id="leave-reason" rows="2" required placeholder="Tulis alasan izin..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white outline-none focus:border-indigo-500"></textarea>
+                            </div>
+                            <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20">
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                                <span>Kirim Permohonan</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                        <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
+                                    <i class="fa-solid fa-clock-rotate-left text-indigo-400 mr-2"></i> Riwayat Permohonan Izin Saya
+                                </h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Status verifikasi persetujuan dari Kepala Madrasah.</p>
+                            </div>
+                            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                                Total: ${cachedLeaves.length}
+                            </span>
+                        </div>
+                        <div class="space-y-2 max-h-60 overflow-y-auto">
+                            ${cachedLeaves.length === 0 ? `<p class="text-xs text-slate-500 italic py-2">Belum ada permohonan izin yang diajukan.</p>` : cachedLeaves.map(lv => `
+                                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-xs flex justify-between items-center gap-2">
+                                    <div class="space-y-0.5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${lv.type === 'SAKIT' ? 'bg-amber-900/30 text-amber-400 border border-amber-800/50' : lv.type === 'DINAS LUAR' ? 'bg-indigo-900/30 text-indigo-400 border border-indigo-800/50' : 'bg-blue-900/30 text-blue-400 border border-blue-800/50'}">${lv.type}</span>
+                                            <span class="text-slate-400 font-mono text-[11px]">${lv.startDate} s/d ${lv.endDate}</span>
+                                        </div>
+                                        <p class="text-slate-200">${lv.reason}</p>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 ${lv.status === 'APPROVED' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30' : lv.status === 'REJECTED' ? 'bg-rose-950/40 text-rose-400 border border-rose-500/30' : 'bg-amber-950/40 text-amber-400 border border-amber-500/30'}">
+                                        ${lv.status}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
 
                 <!-- KARTU 3: REKAPITULASI & LOG PRESENSI BULANAN -->
