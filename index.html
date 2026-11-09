@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Akademik & Omniscient Grader</title>
+    <title>EJURNAL - Portal Akademik & Omniscient Grader</title>
 	<link rel="icon" type="image/png" href="https://i.ibb.co.com/676xL3yn/MI-AL-IRSYAD-AL-ISLAMIYYAH-20260604-173251-0000.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1990,6 +1990,70 @@
         // =========================================================================
         // LOGIKA MODUL PRESENSI GURU & GEOFENCING GPS
         // =========================================================================
+        let presensiClockInterval = null;
+
+        // Deteksi Zona Waktu Indonesia (WIB, WITA, WIT) Otomatis dari Titik Bujur (Longitude) GPS
+        function getGpsTimezoneInfo() {
+            const lng = (gpsState && typeof gpsState.lng === 'number') ? gpsState.lng : (schoolSettings.lng || 114.590700);
+            if (lng >= 125.0) {
+                return { iana: 'Asia/Jayapura', label: 'WIT', offset: 9 };
+            } else if (lng >= 110.0) {
+                return { iana: 'Asia/Makassar', label: 'WITA', offset: 8 };
+            } else {
+                return { iana: 'Asia/Jakarta', label: 'WIB', offset: 7 };
+            }
+        }
+
+        // Ambil Jam Terkini sesuai Zona Waktu GPS
+        function getGpsTimeString(withSeconds = true) {
+            const tz = getGpsTimezoneInfo();
+            const now = new Date();
+            try {
+                const timeStr = now.toLocaleTimeString('id-ID', {
+                    timeZone: tz.iana,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: withSeconds ? '2-digit' : undefined,
+                    hour12: false
+                }).replace(/\./g, ':');
+                return { timeStr, label: tz.label, full: `${timeStr} ${tz.label}` };
+            } catch(e) {
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const timeStr = withSeconds ? `${hours}:${minutes}:${seconds}` : `${hours}:${minutes}`;
+                return { timeStr, label: tz.label, full: `${timeStr} ${tz.label}` };
+            }
+        }
+
+        // Inisialisasi Ticker Jam Realtime Presensi (Bergerak setiap detik)
+        function startPresensiRealtimeClock() {
+            if (presensiClockInterval) clearInterval(presensiClockInterval);
+            
+            function updateClockElements() {
+                const timeObjWithSec = getGpsTimeString(true);
+                const timeObjHM = getGpsTimeString(false);
+                
+                const clockTextEl = document.getElementById('realtime-presensi-clock-text');
+                if (clockTextEl) {
+                    clockTextEl.textContent = timeObjWithSec.full;
+                }
+
+                const clockInBtnTime = document.getElementById('btn-time-clockin');
+                if (clockInBtnTime) {
+                    clockInBtnTime.textContent = timeObjHM.timeStr;
+                }
+
+                const clockOutBtnTime = document.getElementById('btn-time-clockout');
+                if (clockOutBtnTime) {
+                    clockOutBtnTime.textContent = timeObjHM.timeStr;
+                }
+            }
+            
+            updateClockElements();
+            presensiClockInterval = setInterval(updateClockElements, 1000);
+        }
+
         function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3; // Radius bumi dalam meter
             const toRad = deg => (deg * Math.PI) / 180;
@@ -2118,8 +2182,7 @@
             }
 
             const today = new Date().toISOString().split('T')[0];
-            const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const timeStr = getGpsTimeString(false).timeStr;
 
             const limitMin = timeToMinutes(schoolSettings.clockInLimit);
             const currentMin = timeToMinutes(timeStr);
@@ -2202,8 +2265,7 @@
             }
 
             const today = new Date().toISOString().split('T')[0];
-            const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const timeStr = getGpsTimeString(false).timeStr;
 
             if (is_preview) {
                 const existing = window.mockData.attendances.find(a => a.userId === currentUser.uid && a.date === today);
@@ -2503,8 +2565,8 @@
             const myAttToday = cachedAttendances.find(a => a.date === today);
             const isInside = gpsState.distance <= schoolSettings.radius;
 
-            const now = new Date();
-            const timeHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const initialTimeObj = getGpsTimeString(true);
+            const initialTimeHM = getGpsTimeString(false).timeStr;
 
             // Filter data bulan
             let filteredLogs = [...cachedAttendances];
@@ -2609,8 +2671,9 @@
                                 <span class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center">
                                     <i class="fa-solid fa-fingerprint text-indigo-400 mr-2"></i> Presensi Hari Ini
                                 </span>
-                                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-950 text-indigo-300 border border-slate-800">
-                                    ${timeHHMM} WITA
+                                <span id="realtime-presensi-clock" class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-slate-950 text-indigo-300 border border-slate-800 shadow-sm flex items-center gap-1.5" title="Jam Real-Time Sinkron GPS">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span id="realtime-presensi-clock-text">${initialTimeObj.full}</span>
                                 </span>
                             </div>
 
@@ -2673,7 +2736,7 @@
                                         : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25 cursor-pointer'
                                 }">
                                 <i class="fa-solid fa-right-to-bracket"></i>
-                                <span>${myAttToday ? 'Sudah Absen Masuk (' + (myAttToday.clockIn || '-') + ')' : (isSunday ? 'Libur Hari Ahad (-)' : (!isInside ? 'Absen Masuk (Di Luar Radius)' : 'Absen Masuk (' + timeHHMM + ')'))}</span>
+                                <span>${myAttToday ? 'Sudah Absen Masuk (' + (myAttToday.clockIn || '-') + ')' : (isSunday ? 'Libur Hari Ahad (-)' : (!isInside ? 'Absen Masuk (Di Luar Radius)' : 'Absen Masuk (<span id="btn-time-clockin">' + initialTimeHM + '</span>)'))}</span>
                             </button>
 
                             <!-- Tombol Absen Pulang -->
@@ -2685,7 +2748,7 @@
                                         : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 cursor-pointer'
                                 }">
                                 <i class="fa-solid fa-right-from-bracket"></i>
-                                <span>${myAttToday && myAttToday.clockOut ? 'Sudah Absen Pulang (' + myAttToday.clockOut + ')' : (!myAttToday ? 'Absen Pulang (Belum Masuk)' : (!isInside ? 'Absen Pulang (Di Luar Radius)' : 'Absen Pulang (' + timeHHMM + ')'))}</span>
+                                <span>${myAttToday && myAttToday.clockOut ? 'Sudah Absen Pulang (' + myAttToday.clockOut + ')' : (!myAttToday ? 'Absen Pulang (Belum Masuk)' : (!isInside ? 'Absen Pulang (Di Luar Radius)' : 'Absen Pulang (<span id="btn-time-clockout">' + initialTimeHM + '</span>)'))}</span>
                             </button>
                         </div>
                     </div>
@@ -2852,6 +2915,7 @@
                     </div>
                 </div>
             `;
+            startPresensiRealtimeClock();
         }
 
         function loadGuruGrades() {
